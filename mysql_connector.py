@@ -16,15 +16,18 @@ def create_con_db(db_host,user_name, user_password, db_name=None):
         print("Error", db_connection_error)
     return connection
 
-#conn = create_con_db(db_config["mysql"]["host"],
-#                     db_config["mysql"]["user"],
-#                     db_config["mysql"]["pass"])
-#
-#cursor = conn.cursor()
-#create_db_sql = 'CREATE DATABASE {}'.format('1st_db')
-#cursor.execute(create_db_sql)
-#cursor.close()
-#conn.close()
+try:
+    conn = create_con_db(db_config["mysql"]["host"],
+                         db_config["mysql"]["user"],
+                         db_config["mysql"]["pass"])
+
+    cursor = conn.cursor()
+    create_db_sql = 'CREATE DATABASE {}'.format('1st_db')
+    cursor.execute(create_db_sql)
+    cursor.close()
+    conn.close()
+except:
+    print('БД уже создано')
 
 
 

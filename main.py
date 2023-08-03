@@ -1,7 +1,7 @@
-from test_mysql import create_con_db,add_new_address, \
+from mysql_connector import create_con_db,add_new_address, \
     values_table,values_vpn_table, delete_select_address, delete_select_vpn,\
     edt_address, add_new_vpn, edit_vpn
-from tkinter  import *
+from tkinter import *
 from tkinter import ttk
 import csv
 from ttkthemes import ThemedStyle
