@@ -1,7 +1,7 @@
-from mysql_connector import create_con_db,add_new_address, \
+from mysql_connector import add_new_address, \
     values_table,values_vpn_table, delete_select_address, delete_select_vpn,\
     edt_address, add_new_vpn, edit_vpn,select_vpn_name,selection_log_and_pass_by_name,\
-    remove_all_bwd,remove_all_vpn
+    remove_all_bwd,remove_all_vpn,values_company_table,add_company_to_listbox
 from tkinter import *
 from tkinter import ttk
 import csv
@@ -10,7 +10,7 @@ import os
 from tkinter.messagebox import askyesno
 
 main_window = Tk()
-main_window.geometry("800x600")
+main_window.geometry("900x600")
 main_window.title("Система управления бевардом")
 style = ThemedStyle(main_window)
 style.set_theme("arc")
@@ -37,12 +37,15 @@ bwd_frame = ttk.Frame(notebook)
 vpn_frame = ttk.Frame(notebook)
 
 
+
 bwd_frame.pack(fill=BOTH, expand=True)
 vpn_frame.pack(fill=BOTH, expand=True)
 
 
+
 notebook.add(bwd_frame, text='Бевард')
 notebook.add(vpn_frame, text='VPN')
+
 
 
 # Create a bwd frame
@@ -68,7 +71,7 @@ tree.column('owner', width=250, anchor=CENTER)
 tree.heading("ID", text='ID')
 tree.heading("address", text="Адрес")
 tree.heading("ip", text='ip')
-tree.heading("owner", text='owner')
+tree.heading("owner", text='Обслуживающая организация')
 
 # Create view for table
 def view_table():
@@ -87,7 +90,7 @@ tree.tag_configure('evenrow', background='blue')
 
 # Add Record Entry Boxes
 
-data_frame = LabelFrame(bwd_frame, text="Запись")
+data_frame = LabelFrame(bwd_frame, text="Таблица")
 data_frame.pack(fill="x", padx=20)
 
 entris = []
@@ -110,11 +113,35 @@ ip_entry = Entry(data_frame)
 ip_entry.grid(row=0, column=3, padx=10, pady=10)
 entris.append(ip_entry)
 
-owner_label = Label(data_frame, text="Владелец")
+company_list=[]
+for i in values_company_table():
+    company_list.append(i[1])
+owner_label = Label(data_frame, text="Компания")
 owner_label.grid(row=0, column=4, padx=10, pady=10)
-owner_entry = Entry(data_frame)
+owner_entry = ttk.Combobox(data_frame, values=company_list, state="readonly")
 owner_entry.grid(row=0, column=5, padx=10, pady=10)
 entris.append(owner_entry)
+
+def child_for_add_company_to_list():
+    child_window = Tk()
+    child_window.title('Добавить обслуживающую организацию')
+    style = ThemedStyle(child_window)
+    style.set_theme("arc")
+    company_entry = ttk.Entry(child_window)
+    company_entry.grid(column=0, row=0, padx=6, pady=6, sticky=EW)
+    def add_company():
+        company_name = company_entry.get()
+        add_company_to_listbox(company_name)
+    add_btn = ttk.Button(child_window,text="Добавить", command=add_company)
+    add_btn.grid(row=0,column=1, padx=6, pady=6)
+    company_listbox = Listbox(child_window)
+    company_listbox.grid(row=1, column=0, columnspan=2, sticky=EW, padx=5, pady=5)
+    for i in values_company_table():
+        company_listbox.insert(0, i)
+plus_btn = Button(data_frame, text='Добавить обслуживающую\nкомпанию', cursor='hand2', command=child_for_add_company_to_list)
+plus_btn.grid(row=0, column=6, padx=10,pady=10)
+#plus_description = Label(data_frame, text='''Чтобы добавить варианты выбора компаний нажмите на кнопку '+'\n Далее введите название организации, которая обслуживает данную панель''')
+#plus_description.grid(row=0, column=7, padx=10, pady=10)
 
 # Add Buttons for control sql
 button_frame = LabelFrame(bwd_frame, text="Управление списком адресов")
@@ -336,5 +363,5 @@ tree_vpn.bind('<Double-Button-1>', select_record)
 tree_vpn.yview()
 tree_vpn.pack(side=TOP, fill=X)
 
-
+#--------------------------------------------------------------------#
 main_window = mainloop()

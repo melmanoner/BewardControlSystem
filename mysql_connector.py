@@ -55,8 +55,14 @@ try:
     password TEXT NOT NULL,
     PRIMARY KEY (id))'''
     cursor.execute(create_vpn_list)
+    #delete_company_list='''DROP TABLE company_list'''
+    #cursor.execute(delete_company_list)
     create_company_list='''
-    CREATE TABLE IF NOT EXISTS company_list'''
+    CREATE TABLE IF NOT EXISTS company_list(
+    id INT AUTO_INCREMENT,
+    company_name TEXT NOT NULL,
+    PRIMARY KEY (id))'''
+    cursor.execute(create_company_list)
     conn.commit()
 except Error as error:
     print(error)
@@ -151,7 +157,7 @@ def delete_select_vpn(id):
                              "1st_db")
         cursor = conn.cursor()
         delete_select_vpn = f'''
-                DELETE FROM vpn_list WHERE id={id}'''
+        DELETE FROM vpn_list WHERE id={id}'''
         cursor.execute(delete_select_vpn)
         conn.commit()
     except Error as error:
@@ -286,6 +292,45 @@ def remove_all_vpn():
         conn.commit()
     except Error as error:
         print('Ошибка удаления всех VPN,', error)
+    finally:
+        cursor.close()
+        conn.close()
+
+def values_company_table():
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        show_companies = '''
+        SELECT * FROM company_list'''
+        cursor.execute(show_companies)
+        table = cursor.fetchall()
+        return table
+    except Error as error:
+        print('Ошибка выборки компаний из таблицы ',error)
+    finally:
+        cursor.close()
+        conn.close()
+
+def add_company_to_listbox(company_name):
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        add_new_company = f'''
+        INSERT INTO 
+        company_list (company_name)
+        VALUES
+        ('{company_name}');
+         '''
+        cursor.execute(add_new_company)
+        conn.commit()
+    except Error as error:
+        print('Ошибка добавления организцаии', error)
     finally:
         cursor.close()
         conn.close()
