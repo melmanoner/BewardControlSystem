@@ -261,16 +261,19 @@ def select_vpn():
     for vpn in vpn_list:
         if state_vpn.get() == f'{vpn}':
             # Create vbs files for hidde execution bat
-            create_vbs_en = open('hidden_bat_en.vbs', 'w')
-            create_vbs_en.write('Set WshShell = CreateObject("WScript.Shell")\nWshShell.Run chr(34) & "enable_vpn.bat" & Chr(34), 0\nSet WshShell = Nothing')
-            create_vbs_dis = open('hidden_bat_dis.vbs', 'w')
-            create_vbs_dis.write('Set WshShell = CreateObject("WScript.Shell")\nWshShell.Run chr(34) & "disable_vpn.bat" & Chr(34), 0\nSet WshShell = Nothing')
-            create_bat_dis = open('disable_vpn.bat','w')
-            create_bat_dis.write(f'@echo OFF\nrasdial {vpn} /DISCONNECT')
+
+            #VBS doesnt work anymore, idk why, fix it late :)
+            #create_vbs_en = open('hidden_bat_en.vbs', 'w')
+            #create_vbs_en.write('Set WshShell = CreateObject("WScript.Shell")\nWshShell.Run chr(34) & "enable_vpn.bat" & Chr(34), 0\nSet WshShell = Nothing')
+
             create_bat_en = open('enable_vpn.bat', 'w')
             for obj in selection_log_and_pass_by_name(vpn):
-                create_bat_en.write(f'@echo OFF\nrasdial {vpn} {obj[0]} {obj[1]}')
-            os.system('start hidden_bat.vbs')
+                create_bat_en.write(f'@echo OFF\nrasdial {vpn} {obj[0]} {obj[1]}\nexit 1')
+            create_vbs_dis = open('hidden_bat_dis.vbs', 'w')
+            create_vbs_dis.write('Set WshShell = CreateObject("WScript.Shell")\nWshShell.Run chr(34) & "disable_vpn.bat" & Chr(34), 0\nSet WshShell = Nothing')
+            create_bat_dis = open('disable_vpn.bat', 'w')
+            create_bat_dis.write(f'@echo OFF\nrasdial {vpn} /DISCONNECT')
+            os.system('start enable_vpn.bat')
 
 def disable_vpn():
     os.system('start hidden_bat_dis.vbs')
