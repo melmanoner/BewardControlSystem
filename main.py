@@ -250,7 +250,7 @@ vpn_button.grid(row=0, column=4, padx=10, pady=10)
 button_control_bwd_frame = LabelFrame(bwd_frame, text="Управление панелью")
 button_control_bwd_frame.pack(fill=X, padx=20)
 
-# Create radiobutton for vpn connection-------------------------------------------------------------#
+# Create radiobutton for vpn connection------------------------------------------------------------#
 vpn_list = []
 vpn_name = select_vpn_name()
 for obj in vpn_name:
