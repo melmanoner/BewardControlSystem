@@ -217,3 +217,39 @@ def add_new_vpn(owner, name, login, password):
     finally:
         cursor.close()
         conn.close()
+# Select which vpn enable (vpn list for vpn label)
+def select_vpn_name():
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        select_name=f'''
+        SELECT name FROM vpn_list'''
+        cursor.execute(select_name)
+        result = cursor.fetchall()
+        return result
+    except Error as error:
+        print('Ошибка выборки имени из списка VPN', error)
+    finally:
+        cursor.close()
+        conn.close()
+
+def selection_log_and_pass_by_name(vpn):
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        select_logpas = f'''
+        SELECT login, password FROM vpn_list WHERE name='{vpn}' '''
+        cursor.execute(select_logpas)
+        result = cursor.fetchall()
+        return result
+    except Error as error:
+        print('Ошибка выборки логина и пароля по названию vpn, ', error)
+    finally:
+        cursor.close()
+        conn.close()

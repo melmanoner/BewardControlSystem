@@ -1,10 +1,11 @@
 from mysql_connector import create_con_db,add_new_address, \
     values_table,values_vpn_table, delete_select_address, delete_select_vpn,\
-    edt_address, add_new_vpn, edit_vpn
+    edt_address, add_new_vpn, edit_vpn,select_vpn_name,selection_log_and_pass_by_name
 from tkinter import *
 from tkinter import ttk
 import csv
 from ttkthemes import ThemedStyle
+import os
 
 main_window = Tk()
 main_window.geometry("800x600")
@@ -42,19 +43,19 @@ notebook.add(bwd_frame, text='Бевард')
 notebook.add(vpn_frame, text='VPN')
 
 
-#--------------Create a Treeview Frame---------------------------#
+# Create a Treeview Frame
 
 tree_frame = Frame(bwd_frame)
 tree_frame.pack(pady=10)
 
-#------------Create a Treeview Scrollbar-------------------------#
+# Create a Treeview Scrollbar
 
 tree_scroll = Scrollbar(tree_frame)
 tree_scroll.pack(side=RIGHT,fill=Y)
 
-#--------------------------------------------------------------------------------------------#
 
-#-------------------------Create child window for add VPN-------------------------------------------#
+
+# Create frame for vpn
 
 vpn_list_frame = Frame(vpn_frame)
 vpn_list_frame.pack(pady=10)
@@ -107,6 +108,7 @@ password_vpn_entry.grid(row=0, column=7, padx=10, pady=10)
 entris_vpn.append(password_vpn_entry)
 control_vpn_frame = LabelFrame(vpn_frame, text='Управление списком VPN')
 control_vpn_frame.pack(fill=X, padx=20)
+# Create add vpn func
 def add_vpn():
     owner = owner_vpn_entry.get()
     name = name_vpn_entry.get()
@@ -116,8 +118,10 @@ def add_vpn():
     for entry in entris_vpn:
         entry.delete(0, 'end')
     view_vpn_table()
+# Add button
 add_vpn_button = Button(control_vpn_frame, text="Добавить", cursor='hand2', command=add_vpn)
 add_vpn_button.grid(row=0, column=0, padx=10, pady=10)
+# Button for edit vpn
 def edit_select_vpn():
     id = id_vpn_entry.get()
     owner = owner_vpn_entry.get()
@@ -128,6 +132,7 @@ def edit_select_vpn():
     view_vpn_table()
 edit_vpn_button = Button(control_vpn_frame, text='Изменить', command=edit_select_vpn)
 edit_vpn_button.grid(row=0, column=1, padx=10, pady=10)
+# Button for delete vpn
 def delete_sel_vpn():
     delete_select_vpn(id_vpn_entry.get())
     view_vpn_table()
@@ -151,13 +156,10 @@ tree_vpn.bind('<Double-Button-1>', select_record)
 tree_vpn.yview()
 tree_vpn.pack(side=TOP, fill=X)
 
-#--------------------------------------------------------------------------------------------#
 tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set,
                     selectmode="extended",
                     columns=('ID','address','ip','owner'),
                     height=10, show='headings')
-
-
 
 tree.column("ID", width=30 ,anchor=CENTER)
 tree.column('address', width=250, anchor=CENTER)
@@ -168,14 +170,14 @@ tree.heading("ID", text='ID')
 tree.heading("address", text="Адрес")
 tree.heading("ip", text='ip')
 tree.heading("owner", text='owner')
-#-------------Create view for table----------------------------#
+
+# Create view for table
 def view_table():
     [tree.delete(i) for i in tree.get_children()]
     for row in values_table():
         tree.insert('','end',values=row)
-#------------Call view_table func------------------------------#
+# Call view_table func
 view_table()
-#-------------------------------------------------------------#
 
 tree.yview()
 tree.pack(side=TOP, fill=X)
@@ -184,11 +186,8 @@ tree.pack(side=TOP, fill=X)
 tree.tag_configure('oddrow', background='yellow')
 tree.tag_configure('evenrow', background='blue')
 
-
-
-
-
 # Add Record Entry Boxes
+
 data_frame = LabelFrame(bwd_frame, text="Запись")
 data_frame.pack(fill="x", padx=20)
 
@@ -222,7 +221,6 @@ button_frame.pack(fill=X, padx=20)
 add_button = Button(button_frame, text="Добавить",cursor = 'hand2')
 add_button.grid(row=0, column=0, padx=10, pady=10)
 
-
 # Edit button
 def edit_address():
     address = address_entry.get()
@@ -252,23 +250,42 @@ vpn_button.grid(row=0, column=4, padx=10, pady=10)
 button_control_bwd_frame = LabelFrame(bwd_frame, text="Управление панелью")
 button_control_bwd_frame.pack(fill=X, padx=20)
 
-#add_new_button = Button(button_control_bwd_frame, text="Добавить" ,cursor = 'hand2')
-#add_new_button.grid(row=0, column=0, padx=10, pady=10)
+# Create radiobutton for vpn connection-------------------------------------------------------------#
+vpn_list = []
+vpn_name = select_vpn_name()
+for obj in vpn_name:
+    vpn_list.append(obj[0])
+state_vpn = StringVar()
+i=0
+def select_vpn():
+    for vpn in vpn_list:
+        if state_vpn.get() == f'{vpn}':
+            # Create vbs files for hidde execution bat
+            create_vbs_en = open('hidden_bat_en.vbs', 'w')
+            create_vbs_en.write('Set WshShell = CreateObject("WScript.Shell")\nWshShell.Run chr(34) & "enable_vpn.bat" & Chr(34), 0\nSet WshShell = Nothing')
+            create_vbs_dis = open('hidden_bat_dis.vbs', 'w')
+            create_vbs_dis.write('Set WshShell = CreateObject("WScript.Shell")\nWshShell.Run chr(34) & "disable_vpn.bat" & Chr(34), 0\nSet WshShell = Nothing')
+            create_bat_dis = open('disable_vpn.bat','w')
+            create_bat_dis.write(f'@echo OFF\nrasdial {vpn} /DISCONNECT')
+            create_bat_en = open('enable_vpn.bat', 'w')
+            for obj in selection_log_and_pass_by_name(vpn):
+                create_bat_en.write(f'@echo OFF\nrasdial {vpn} {obj[0]} {obj[1]}')
+            os.system('start hidden_bat.vbs')
 
-# Create checkbutton for VPN
-enabled = StringVar()
-def enable_vpn():
-    if enabled.get()=='on':
-        f = open('enable_vpn.bat')
-        for line in f:
-            line
-        print(line)
-    else:
-        print('off')
-vpn_checkbutton = ttk.Checkbutton(text="Включить VPN",variable=enabled, offvalue="off", onvalue="on", command=enable_vpn)
-vpn_checkbutton.pack(padx=0, pady=0, anchor=NW)
+def disable_vpn():
+    os.system('start hidden_bat_dis.vbs')
 
-# Select Record
+disable_vpn_radiobutton = ttk.Radiobutton(bwd_frame, text='Отключить',variable=state_vpn, value='off', command=disable_vpn)
+disable_vpn_radiobutton.pack(padx=0, pady=0, anchor=NW)
+
+for vpn in vpn_list:
+    vpn = ttk.Radiobutton(bwd_frame, text=vpn,variable=state_vpn, value=vpn,command=select_vpn)
+    vpn.pack(padx=0,pady=0, anchor=NW)
+    i=i+1
+
+#--------------------------------------------------------------------------------------------------#
+####################################################################################################
+# Double click selection---------------------------------------------------------------------------#
 def select_record(event):
     # Clear entry boxes
     for entry in entris:
@@ -284,8 +301,7 @@ def select_record(event):
         i=i+1
 
 tree.bind('<Double-Button-1>', select_record)
-
-
+#--------------------------------------------------------------------------------------------------#
 
 
 
