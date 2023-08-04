@@ -132,16 +132,25 @@ def child_for_add_company_to_list():
     def add_company():
         company_name = company_entry.get()
         add_company_to_listbox(company_name)
+        view_list_company()
     add_btn = ttk.Button(child_window,text="Добавить", command=add_company)
     add_btn.grid(row=0,column=1, padx=6, pady=6)
-    company_listbox = Listbox(child_window)
-    company_listbox.grid(row=1, column=0, columnspan=2, sticky=EW, padx=5, pady=5)
-    for i in values_company_table():
-        company_listbox.insert(0, i)
+    company_tree = ttk.Treeview(child_window,yscrollcommand=tree_scroll.set,
+                    selectmode="extended", columns=('id','company'), height=10, show='headings')
+    company_tree.grid(row=2,column=0)
+    company_tree.column('id', width=30, anchor=CENTER)
+    company_tree.column('company', width=250, anchor=CENTER)
+    company_tree.heading('id', text='ID')
+    company_tree.heading('company', text='Организации')
+    def view_list_company():
+        [company_tree.delete(i) for i in company_tree.get_children()]
+        for row in values_company_table():
+            company_tree.insert('', 'end', values=row)
+    view_list_company()
+
 plus_btn = Button(data_frame, text='Добавить обслуживающую\nкомпанию', cursor='hand2', command=child_for_add_company_to_list)
 plus_btn.grid(row=0, column=6, padx=10,pady=10)
-#plus_description = Label(data_frame, text='''Чтобы добавить варианты выбора компаний нажмите на кнопку '+'\n Далее введите название организации, которая обслуживает данную панель''')
-#plus_description.grid(row=0, column=7, padx=10, pady=10)
+
 
 # Add Buttons for control sql
 button_frame = LabelFrame(bwd_frame, text="Управление списком адресов")
