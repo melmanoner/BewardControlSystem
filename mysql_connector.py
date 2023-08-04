@@ -11,7 +11,6 @@ def create_con_db(db_host,user_name, user_password, db_name=None):
             passwd = user_password,
             database = db_name
         )
-        print("Suc")
     except Error as db_connection_error:
         print("Error", db_connection_error)
     return connection
@@ -37,12 +36,14 @@ conn = create_con_db(db_config["mysql"]["host"],
                     "1st_db")
 try:
     cursor = conn.cursor()
+    #delete_bwd = '''DROP TABLE address_list'''
+    #cursor.execute(delete_bwd)
     create_address_list='''
     CREATE TABLE IF NOT EXISTS address_list(
     id INT AUTO_INCREMENT,
     address TEXT NOT NULL,
     ip TEXT NOT NULL,
-    owner INT NOT NULL,
+    owner TEXT NOT NULL,
     PRIMARY KEY (id))'''
     cursor.execute(create_address_list)
     create_vpn_list='''
@@ -55,7 +56,6 @@ try:
     PRIMARY KEY (id))'''
     cursor.execute(create_vpn_list)
     conn.commit()
-    print('Таблицы созданы')
 except Error as error:
     print(error)
 finally:
@@ -250,6 +250,40 @@ def selection_log_and_pass_by_name(vpn):
         return result
     except Error as error:
         print('Ошибка выборки логина и пароля по названию vpn, ', error)
+    finally:
+        cursor.close()
+        conn.close()
+
+def remove_all_bwd():
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        delete_all_bwd = '''
+        DELETE FROM address_list'''
+        cursor.execute(delete_all_bwd)
+        conn.commit()
+    except Error as error:
+        print('Ошибка удаления всех записей,', error)
+    finally:
+        cursor.close()
+        conn.close()
+
+def remove_all_vpn():
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        delete_all_vpn = '''
+        DELETE FROM vpn_list'''
+        cursor.execute(delete_all_vpn)
+        conn.commit()
+    except Error as error:
+        print('Ошибка удаления всех VPN,', error)
     finally:
         cursor.close()
         conn.close()

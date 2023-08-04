@@ -1,11 +1,13 @@
 from mysql_connector import create_con_db,add_new_address, \
     values_table,values_vpn_table, delete_select_address, delete_select_vpn,\
-    edt_address, add_new_vpn, edit_vpn,select_vpn_name,selection_log_and_pass_by_name
+    edt_address, add_new_vpn, edit_vpn,select_vpn_name,selection_log_and_pass_by_name,\
+    remove_all_bwd,remove_all_vpn
 from tkinter import *
 from tkinter import ttk
 import csv
 from ttkthemes import ThemedStyle
 import os
+from tkinter.messagebox import askyesno, showinfo
 
 main_window = Tk()
 main_window.geometry("800x600")
@@ -138,6 +140,14 @@ def delete_sel_vpn():
     view_vpn_table()
 delete_vpn_button = Button(control_vpn_frame, text="Удалить", cursor='hand2', command=delete_sel_vpn)
 delete_vpn_button.grid(row=0, column=2, padx=10, pady=10)
+
+def delete_all_vpn():
+    result = askyesno(title='Подтверждение операции', message='Вы действительно хотите удалить ВСЕ записи в списке VPN?')
+    if result:
+        remove_all_vpn()
+        view_vpn_table()
+delete_all_vpn_btn = Button(control_vpn_frame, text='Удалить все VPN', cursor='hand2', command=delete_all_vpn)
+delete_all_vpn_btn.grid(row=0, column=3, padx=10, pady=10)
 # Select Record
 def select_record(event):
     # Clear entry boxes
@@ -192,6 +202,9 @@ data_frame = LabelFrame(bwd_frame, text="Запись")
 data_frame.pack(fill="x", padx=20)
 
 entris = []
+def clear_entris():
+    for entry in entris:
+        entry.delete(0, END)
 id_entry = Entry(data_frame)
 id_entry.grid_remove()
 entris.append(id_entry)
@@ -218,7 +231,14 @@ entris.append(owner_entry)
 button_frame = LabelFrame(bwd_frame, text="Управление списком адресов")
 button_frame.pack(fill=X, padx=20)
 
-add_button = Button(button_frame, text="Добавить",cursor = 'hand2')
+def add_bwd():
+    address = address_entry.get()
+    ip = ip_entry.get()
+    owner = owner_entry.get()
+    add_new_address(address, ip, owner)
+    clear_entris()
+    view_table()
+add_button = Button(button_frame, text="Добавить",cursor = 'hand2', command=add_bwd)
 add_button.grid(row=0, column=0, padx=10, pady=10)
 
 # Edit button
@@ -240,11 +260,17 @@ def remove_command():
 remove_button = Button(button_frame, text="Удалить выбранный", command=remove_command,cursor = 'hand2')
 remove_button.grid(row=0, column=2, padx=10, pady=10)
 
-remove_all_button = Button(button_frame, text="Удалить все",cursor = 'hand2')
+def remove_all_warning():
+    result = askyesno(title='Подтверждение операции', message='Вы действительно хотите удалить ВСЕ записи?')
+    if result:
+        remove_all_bwd()
+        view_table()
+
+
+remove_all_button = Button(button_frame, text="Удалить все",cursor = 'hand2', command=remove_all_warning)
 remove_all_button.grid(row=0, column=3, padx=10, pady=10)
 
-vpn_button = Button(button_frame, text="VPN",cursor = 'hand2')
-vpn_button.grid(row=0, column=4, padx=10, pady=10)
+
 
 #Add Buttons for control panel
 button_control_bwd_frame = LabelFrame(bwd_frame, text="Управление панелью")
@@ -262,7 +288,7 @@ def select_vpn():
         if state_vpn.get() == f'{vpn}':
             # Create vbs files for hidde execution bat
 
-            #VBS doesnt work anymore, idk why, fix it late :)
+            # VBS doesnt work anymore, idk why, fix it late :)
             #create_vbs_en = open('hidden_bat_en.vbs', 'w')
             #create_vbs_en.write('Set WshShell = CreateObject("WScript.Shell")\nWshShell.Run chr(34) & "enable_vpn.bat" & Chr(34), 0\nSet WshShell = Nothing')
 
@@ -291,8 +317,7 @@ for vpn in vpn_list:
 # Double click selection---------------------------------------------------------------------------#
 def select_record(event):
     # Clear entry boxes
-    for entry in entris:
-        entry.delete(0, END)
+    clear_entris()
     # Grab record Number
     selected = tree.focus()
     # Grab record values
