@@ -7,7 +7,7 @@ from tkinter import ttk
 import csv
 from ttkthemes import ThemedStyle
 import os
-from tkinter.messagebox import askyesno, showinfo
+from tkinter.messagebox import askyesno
 
 main_window = Tk()
 main_window.geometry("800x600")

@@ -55,6 +55,8 @@ try:
     password TEXT NOT NULL,
     PRIMARY KEY (id))'''
     cursor.execute(create_vpn_list)
+    create_company_list='''
+    CREATE TABLE IF NOT EXISTS company_list'''
     conn.commit()
 except Error as error:
     print(error)
