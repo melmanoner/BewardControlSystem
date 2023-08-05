@@ -330,6 +330,7 @@ def add_company_to_listbox(company_name):
         cursor.execute(add_new_company)
         conn.commit()
     except Error as error:
+        print('Ошибка добавления организцаии', error)
     finally:
         cursor.close()
         conn.close()

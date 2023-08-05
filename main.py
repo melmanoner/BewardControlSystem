@@ -114,12 +114,18 @@ ip_entry = Entry(data_frame)
 ip_entry.grid(row=0, column=3, padx=10, pady=10)
 entris.append(ip_entry)
 
-company_list=[]
-for i in values_company_table():
-    company_list.append(i[1])
+# Update company combobox
+def update_combobox_company_values():
+    company_list = []
+    for i in values_company_table():
+        company_list.append(i[1])
+    return company_list
+
+lists_for_combobox = update_combobox_company_values()
+
 owner_label = Label(data_frame, text="Компания")
 owner_label.grid(row=0, column=4, padx=10, pady=10)
-owner_entry = ttk.Combobox(data_frame, values=company_list, state="readonly")
+owner_entry = ttk.Combobox(data_frame, values=lists_for_combobox, state="readonly")
 owner_entry.grid(row=0, column=5, padx=10, pady=10)
 entris.append(owner_entry)
 
@@ -134,6 +140,8 @@ def child_for_add_company_to_list():
         company_name = company_entry.get()
         add_company_to_listbox(company_name)
         view_list_company()
+        new_combobox_company = update_combobox_company_values()
+        owner_entry['values'] = new_combobox_company
     add_btn = ttk.Button(child_window,text="Добавить", command=add_company)
     add_btn.grid(row=0,column=1, padx=6, pady=6)
     company_tree = ttk.Treeview(child_window,yscrollcommand=tree_scroll.set,
@@ -153,6 +161,8 @@ def child_for_add_company_to_list():
         company_name = company_tree.item(selected, 'values')
         delete_company(company_name[1])
         view_list_company()
+        new_combobox_company = update_combobox_company_values()
+        owner_entry['values'] = new_combobox_company
     delete_btn = ttk.Button(child_window, text="Удалить", command=delete_select_company)
     delete_btn.grid(row=1, column=1, padx=6,pady=6)
 
