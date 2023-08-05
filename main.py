@@ -1,7 +1,8 @@
 from mysql_connector import add_new_address, \
     values_table,values_vpn_table, delete_select_address, delete_select_vpn,\
     edt_address, add_new_vpn, edit_vpn,select_vpn_name,selection_log_and_pass_by_name,\
-    remove_all_bwd,remove_all_vpn,values_company_table,add_company_to_listbox
+    remove_all_bwd,remove_all_vpn,values_company_table,add_company_to_listbox,delete_company
+
 from tkinter import *
 from tkinter import ttk
 import csv
@@ -137,7 +138,7 @@ def child_for_add_company_to_list():
     add_btn.grid(row=0,column=1, padx=6, pady=6)
     company_tree = ttk.Treeview(child_window,yscrollcommand=tree_scroll.set,
                     selectmode="extended", columns=('id','company'), height=10, show='headings')
-    company_tree.grid(row=2,column=0)
+    company_tree.grid(row=1,column=0)
     company_tree.column('id', width=30, anchor=CENTER)
     company_tree.column('company', width=250, anchor=CENTER)
     company_tree.heading('id', text='ID')
@@ -147,6 +148,13 @@ def child_for_add_company_to_list():
         for row in values_company_table():
             company_tree.insert('', 'end', values=row)
     view_list_company()
+    def delete_select_company():
+        selected = company_tree.focus()
+        company_name = company_tree.item(selected, 'values')
+        delete_company(company_name[1])
+        view_list_company()
+    delete_btn = ttk.Button(child_window, text="Удалить", command=delete_select_company)
+    delete_btn.grid(row=1, column=1, padx=6,pady=6)
 
 plus_btn = Button(data_frame, text='Добавить обслуживающую\nкомпанию', cursor='hand2', command=child_for_add_company_to_list)
 plus_btn.grid(row=0, column=6, padx=10,pady=10)

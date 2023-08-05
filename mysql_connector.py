@@ -330,7 +330,25 @@ def add_company_to_listbox(company_name):
         cursor.execute(add_new_company)
         conn.commit()
     except Error as error:
-        print('Ошибка добавления организцаии', error)
+    finally:
+        cursor.close()
+        conn.close()
+
+def delete_company(company_name):
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        delete = f'''
+        DELETE FROM 
+        company_list WHERE company_name='{company_name}'
+         '''
+        cursor.execute(delete)
+        conn.commit()
+    except Error as error:
+        print('Ошибка удаления организцаии', error)
     finally:
         cursor.close()
         conn.close()
