@@ -11,7 +11,7 @@ import os
 from tkinter.messagebox import askyesno
 
 main_window = Tk()
-main_window.geometry("900x600")
+#main_window.geometry("900x600")
 main_window.title("Система управления бевардом")
 style = ThemedStyle(main_window)
 style.set_theme("arc")
@@ -114,6 +114,17 @@ ip_entry = Entry(data_frame)
 ip_entry.grid(row=0, column=3, padx=10, pady=10)
 entris.append(ip_entry)
 
+
+login_bwd_label = Label(data_frame, text='Логин')
+login_bwd_label.grid(row=1, column=0, padx=10, pady=10)
+login_bwd_entry = Entry(data_frame)
+login_bwd_entry.grid(row=1, column=1, padx=10, pady=10)
+
+password_bwd_label = Label(data_frame, text='Пароль')
+password_bwd_label.grid(row=1, column=2, padx=10, pady=10)
+password_bwd_entry = Entry(data_frame)
+password_bwd_entry.grid(row=1, column=3, padx=10, pady=10)
+
 # Update company combobox
 def update_combobox_company_values():
     company_list = []
@@ -123,7 +134,7 @@ def update_combobox_company_values():
 
 lists_for_combobox = update_combobox_company_values()
 
-owner_label = Label(data_frame, text="Компания")
+owner_label = Label(data_frame, text="Обслуживающая организация")
 owner_label.grid(row=0, column=4, padx=10, pady=10)
 owner_entry = ttk.Combobox(data_frame, values=lists_for_combobox, state="readonly")
 owner_entry.grid(row=0, column=5, padx=10, pady=10)
@@ -166,7 +177,7 @@ def child_for_add_company_to_list():
     delete_btn = ttk.Button(child_window, text="Удалить", command=delete_select_company)
     delete_btn.grid(row=1, column=1, padx=6,pady=6)
 
-plus_btn = Button(data_frame, text='Добавить обслуживающую\nкомпанию', cursor='hand2', command=child_for_add_company_to_list)
+plus_btn = Button(data_frame, text='Добавить обслуживающую\nорганизацию', cursor='hand2', command=child_for_add_company_to_list)
 plus_btn.grid(row=0, column=6, padx=10,pady=10)
 
 
@@ -177,8 +188,10 @@ button_frame.pack(fill=X, padx=20)
 def add_bwd():
     address = address_entry.get()
     ip = ip_entry.get()
+    login = login_bwd_entry.get()
+    password = password_bwd_entry.get()
     owner = owner_entry.get()
-    add_new_address(address, ip, owner)
+    add_new_address(address, ip, login, password, owner)
     clear_entris()
     view_table()
 add_button = Button(button_frame, text="Добавить",cursor = 'hand2', command=add_bwd)
@@ -188,9 +201,11 @@ add_button.grid(row=0, column=0, padx=10, pady=10)
 def edit_address():
     address = address_entry.get()
     ip = ip_entry.get()
+    login = login_bwd_entry.get()
+    password = password_bwd_entry.get()
     owner = owner_entry.get()
     id = id_entry.get()
-    edt_address(id, address,ip,owner)
+    edt_address(id, address,ip,login,password,owner)
     view_table()
 
 
