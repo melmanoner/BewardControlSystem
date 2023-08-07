@@ -152,7 +152,7 @@ def child_for_add_company_to_list():
         add_company_to_listbox(company_name)
         view_list_company()
         new_combobox_company = update_combobox_company_values()
-        owner_entry['values'] = new_combobox_company
+        owner_entry['values']=owner_vpn_entry['values'] = new_combobox_company
     add_btn = ttk.Button(child_window,text="Добавить", command=add_company)
     add_btn.grid(row=0,column=1, padx=6, pady=6)
     company_tree = ttk.Treeview(child_window,yscrollcommand=tree_scroll.set,
@@ -173,7 +173,7 @@ def child_for_add_company_to_list():
         delete_company(company_name[1])
         view_list_company()
         new_combobox_company = update_combobox_company_values()
-        owner_entry['values'] = new_combobox_company
+        owner_entry['values'] = owner_vpn_entry['values'] = new_combobox_company
     delete_btn = ttk.Button(child_window, text="Удалить", command=delete_select_company)
     delete_btn.grid(row=1, column=1, padx=6,pady=6)
 
@@ -263,14 +263,36 @@ def select_vpn():
 def disable_vpn():
     os.system('start hidden_bat_dis.vbs')
 
-disable_vpn_radiobutton = ttk.Radiobutton(bwd_frame, text='Отключить',variable=state_vpn, value='off', command=disable_vpn)
-disable_vpn_radiobutton.pack(padx=0, pady=0, anchor=NW)
+bottom_frame = LabelFrame(bwd_frame)
+bottom_frame.pack()
+
+# Label for vpn controller
+vpn_controller_frame = LabelFrame(bottom_frame, text="VPN")
+vpn_controller_frame.pack(fill="y", padx=20, side=LEFT)
+disable_vpn_radiobutton = ttk.Radiobutton(vpn_controller_frame, text='Отключить',variable=state_vpn, value='off', command=disable_vpn)
+disable_vpn_radiobutton.grid(row=0, column=0)
+
 def show_vpn():
+    i=1
+    vpn_list = []
+    vpn_name = select_vpn_name()
+    for obj in vpn_name:
+        vpn_list.append(obj[0])
     for vpn in vpn_list:
-        vpn = ttk.Radiobutton(bwd_frame, text=vpn, variable=state_vpn, value=vpn, command=select_vpn)
-        vpn.pack(padx=0, pady=0, anchor=NW)
+        vpn = ttk.Radiobutton(vpn_controller_frame, text=vpn, variable=state_vpn, value=vpn, command=select_vpn)
+        vpn.grid(row=i, column=0, padx=10, pady=10)
+        i+=1
 show_vpn()
 
+# Label for bwd controller
+bwd_controller_frame = LabelFrame(bottom_frame, text='Контроллер')
+bwd_controller_frame.pack(fill='x', padx=20, side=RIGHT)
+
+open_door = Button(bwd_controller_frame, text='Открыть дверь',cursor = 'hand2')
+open_door.grid(row=0, column=0, padx=10, pady=10)
+
+autorecord = Button(bwd_controller_frame, text='Включить автозапись', cursor='hand2')
+autorecord.grid(row=0, column=1,padx=10, pady=10)
 
 #--------------------------------------------------------------------------------------------------#
 ####################################################################################################
@@ -325,7 +347,7 @@ id_vpn_entry.grid_remove()
 entris_vpn.append(id_vpn_entry)
 owner_vpn_label = Label(vpn_label_frame, text="Владелец")
 owner_vpn_label.grid(row=0, column=0, padx=10, pady=10)
-owner_vpn_entry = Entry(vpn_label_frame)
+owner_vpn_entry = ttk.Combobox(vpn_label_frame, values=lists_for_combobox,state="readonly")
 owner_vpn_entry.grid(row=0, column=1, padx=10, pady=10)
 entris_vpn.append(owner_vpn_entry)
 name_vpn_label = Label(vpn_label_frame, text="Название сети")
@@ -402,8 +424,12 @@ def select_record(event):
         entry.insert(0, values[i])
         i = i + 1
 tree_vpn.bind('<Double-Button-1>', select_record)
+
+
 tree_vpn.yview()
 tree_vpn.pack(side=TOP, fill=X)
+
+
 
 #--------------------------------------------------------------------#
 main_window = mainloop()
