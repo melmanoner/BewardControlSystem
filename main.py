@@ -294,6 +294,15 @@ open_door.grid(row=0, column=0, padx=10, pady=10)
 autorecord = Button(bwd_controller_frame, text='Включить автозапись', cursor='hand2')
 autorecord.grid(row=0, column=1,padx=10, pady=10)
 
+add_key_label = Label(bwd_controller_frame, text='Ключ')
+add_key_label.grid(row=0, column=2,padx=10, pady=10)
+
+add_key_entry = Entry(bwd_controller_frame)
+add_key_entry.grid(row=0, column=3, padx=10, pady=10)
+
+add_key_btn = Button(bwd_controller_frame, text='Добавить ключ')
+add_key_btn.grid(row=0, column=4, padx=10, pady=10)
+
 #--------------------------------------------------------------------------------------------------#
 ####################################################################################################
 # Double click selection---------------------------------------------------------------------------#
