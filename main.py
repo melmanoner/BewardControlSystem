@@ -1,3 +1,5 @@
+import tkinter as tk
+
 from mysql_connector import add_new_address, \
     values_table,values_vpn_table, delete_select_address, delete_select_vpn,\
     edt_address, add_new_vpn, edit_vpn,select_vpn_name,selection_log_and_pass_by_name,\
@@ -10,6 +12,7 @@ from ttkthemes import ThemedStyle
 import os
 from tkinter.messagebox import askyesno
 import requests
+
 
 # Sorry for my english, I usually write from my head, but sometimes I look into the translator. I try to get used.
 #Create main window
@@ -314,22 +317,34 @@ add_key_btn.grid(row=0, column=4, padx=10, pady=10)
 
 # Create func for show all keys in bwd
 
-def show_all_keys():
+def show_all_mifare_keys():
     ip = ip_entry.get()
     login = login_bwd_entry.get()
     password = password_bwd_entry.get()
-    r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/rfid_cgi?action=list''')
+    r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/mifare_cgi?action=list''')
     list=[]
 
     #for i in r.text:
     #    list.append(i)
     print(r.text)
     show_keys_window = Tk()
-    txt = Label(show_keys_window, text=r.text)
-    txt.pack()
+    list_mf = Label(show_keys_window, text=r.text)
+    list_mf.pack()
 
-show_all_keys_btn = Button(bwd_controller_frame, text='Показать список всех ключей', command=show_all_keys)
-show_all_keys_btn.grid(row=0, column=5, padx=10, pady=10)
+show_all_mifare_keys_btn = Button(bwd_controller_frame, text='Показать список всех MIFARE ключей', command=show_all_mifare_keys)
+show_all_mifare_keys_btn.grid(row=0, column=5, padx=10, pady=10)
+
+def show_all_rfid_keys():
+    ip = ip_entry.get()
+    login = login_bwd_entry.get()
+    password = password_bwd_entry.get()
+    r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/rfid_cgi?action=list''')
+    show_keys_window = Tk()
+    list_rfid = Label(show_keys_window, text=r.text)
+    list_rfid.pack()
+
+show_all_rfid_keys_btn = Button(bwd_controller_frame, text='Показать список всех RFID ключей', command=show_all_rfid_keys)
+show_all_rfid_keys_btn.grid(row=0, column=6, padx=10, pady=10)
 #--------------------------------------------------------------------------------------------------#
 ####################################################################################################
 # Double click selection---------------------------------------------------------------------------#
