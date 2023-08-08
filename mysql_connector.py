@@ -89,6 +89,7 @@ def add_new_address(address, ip,login, password, owner):
         cursor.execute(add_new_entry)
         conn.commit()
         add_result = 'Адреса добавлены успешно'
+        print(add_result)
         return add_result
     except Error as error:
         print('Ошибка добавления',error)

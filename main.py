@@ -9,7 +9,10 @@ import csv
 from ttkthemes import ThemedStyle
 import os
 from tkinter.messagebox import askyesno
+import requests
 
+# Sorry for my english, I usually write from my head, but sometimes I look into the translator. I try to get used.
+#Create main window
 main_window = Tk()
 #main_window.geometry("900x600")
 main_window.title("Система управления бевардом")
@@ -61,17 +64,21 @@ tree_scroll.pack(side=RIGHT,fill=Y)
 
 tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set,
                     selectmode="extended",
-                    columns=('ID','address','ip','owner'),
+                    columns=('ID','address','ip','login','password','owner'),
                     height=10, show='headings')
 
 tree.column("ID", width=30 ,anchor=CENTER)
 tree.column('address', width=250, anchor=CENTER)
 tree.column('ip', width=250, anchor=CENTER)
+tree.column('login', width=250, anchor=CENTER)
+tree.column('password', width=250, anchor=CENTER)
 tree.column('owner', width=250, anchor=CENTER)
 
 tree.heading("ID", text='ID')
 tree.heading("address", text="Адрес")
 tree.heading("ip", text='ip')
+tree.heading("login", text='Логин')
+tree.heading("password", text='Пароль')
 tree.heading("owner", text='Обслуживающая организация')
 
 # Create view for table
@@ -119,11 +126,13 @@ login_bwd_label = Label(data_frame, text='Логин')
 login_bwd_label.grid(row=1, column=0, padx=10, pady=10)
 login_bwd_entry = Entry(data_frame)
 login_bwd_entry.grid(row=1, column=1, padx=10, pady=10)
+entris.append(login_bwd_entry)
 
 password_bwd_label = Label(data_frame, text='Пароль')
 password_bwd_label.grid(row=1, column=2, padx=10, pady=10)
 password_bwd_entry = Entry(data_frame)
 password_bwd_entry.grid(row=1, column=3, padx=10, pady=10)
+entris.append(password_bwd_entry)
 
 # Update company combobox
 def update_combobox_company_values():
@@ -303,6 +312,20 @@ add_key_entry.grid(row=0, column=3, padx=10, pady=10)
 add_key_btn = Button(bwd_controller_frame, text='Добавить ключ')
 add_key_btn.grid(row=0, column=4, padx=10, pady=10)
 
+# Create func for show all keys in bwd
+
+def show_all_keys():
+    ip = ip_entry.get()
+    login = login_bwd_entry.get()
+    password = password_bwd_entry.get()
+    r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/rfid_cgi?action=list''')
+    print(r.text)
+    show_keys_window = Tk()
+    txt = Label(show_keys_window, text=r.text)
+    txt.pack()
+
+show_all_keys_btn = Button(bwd_controller_frame, text='Показать список всех ключей', command=show_all_keys)
+show_all_keys_btn.grid(row=0, column=5, padx=10, pady=10)
 #--------------------------------------------------------------------------------------------------#
 ####################################################################################################
 # Double click selection---------------------------------------------------------------------------#
@@ -441,4 +464,9 @@ tree_vpn.pack(side=TOP, fill=X)
 
 
 #--------------------------------------------------------------------#
+# Create func for disable vpn when destroy main window
+def on_close():
+    disable_vpn()
+    main_window.destroy()
+main_window.protocol('WM_DELETE_WINDOW', on_close)
 main_window = mainloop()
