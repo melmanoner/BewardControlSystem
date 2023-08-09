@@ -12,7 +12,7 @@ from ttkthemes import ThemedStyle
 import os
 from tkinter.messagebox import askyesno
 import requests
-from functions import update_combobox_company_values
+from functions import update_combobox_company_values, disable_vpn
 
 class MainWindow(tk.Tk):
     def __init__(self,*args, **kwargs):
@@ -246,8 +246,7 @@ class MainWindow(tk.Tk):
                     create_bat_dis.write(f'@echo OFF\nrasdial {vpn} /DISCONNECT')
                     os.system('start enable_vpn.bat')
 
-        def disable_vpn():
-            self.os.system('start hidden_bat_dis.vbs')
+
 
         bottom_frame = LabelFrame(self.bwd_frame)
         bottom_frame.pack()
@@ -280,14 +279,18 @@ class MainWindow(tk.Tk):
         autorecord = Button(bwd_controller_frame, text='Включить автозапись', cursor='hand2')
         autorecord.grid(row=0, column=1,padx=10, pady=10)
 
-        add_key_label = Label(bwd_controller_frame, text='Ключ')
-        add_key_label.grid(row=0, column=2,padx=10, pady=10)
+        key_label = Label(bwd_controller_frame, text='Ключ')
+        key_label.grid(row=0, column=2,padx=10, pady=10)
 
         add_key_entry = Entry(bwd_controller_frame)
         add_key_entry.grid(row=0, column=3, padx=10, pady=10)
 
         add_key_btn = Button(bwd_controller_frame, text='Добавить ключ')
         add_key_btn.grid(row=0, column=4, padx=10, pady=10)
+
+        delete_key_button = Label(bwd_controller_frame, text='Удалить')
+        delete_key_button.grid(row=0, column=5, padx=10,pady=10)
+
 
         # Create func for show all keys in bwd
 
@@ -296,17 +299,14 @@ class MainWindow(tk.Tk):
             login = self.login_bwd_entry.get()
             password = self.password_bwd_entry.get()
             r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/mifare_cgi?action=list''')
-            list=[]
 
-            #for i in r.text:
-            #    list.append(i)
-            print(r.text)
+
             show_keys_window = Tk()
             list_mf = Label(show_keys_window, text=r.text)
             list_mf.pack()
 
-        show_all_mifare_keys_btn = Button(bwd_controller_frame, text='Показать список всех MIFARE ключей', command=show_all_mifare_keys)
-        show_all_mifare_keys_btn.grid(row=0, column=5, padx=10, pady=10)
+        show_all_mifare_keys_btn = Button(bwd_controller_frame, text='Показать список\nMIFARE ключей', command=show_all_mifare_keys)
+        show_all_mifare_keys_btn.grid(row=1, column=0, padx=10, pady=10)
 
         def show_all_rfid_keys():
             ip = self.ip_entry.get()
@@ -317,8 +317,8 @@ class MainWindow(tk.Tk):
             list_rfid = Label(show_keys_window, text=r.text)
             list_rfid.pack()
 
-        show_all_rfid_keys_btn = Button(bwd_controller_frame, text='Показать список всех RFID ключей', command=show_all_rfid_keys)
-        show_all_rfid_keys_btn.grid(row=0, column=6, padx=10, pady=10)
+        show_all_rfid_keys_btn = Button(bwd_controller_frame, text='Показать список\nRFID ключей', command=show_all_rfid_keys)
+        show_all_rfid_keys_btn.grid(row=1, column=1, padx=10, pady=10)
         #--------------------------------------------------------------------------------------------------#
         ####################################################################################################
         # Double click selection---------------------------------------------------------------------------#
@@ -509,7 +509,7 @@ if __name__ == "__main__":
 
     main_app = MainWindow()
     def on_close():
-        #main_app.app.disable_vpn()
+        disable_vpn()
         main_app.destroy()
     main_app.protocol('WM_DELETE_WINDOW', on_close)
     main_app = mainloop()
