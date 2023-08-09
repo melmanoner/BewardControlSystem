@@ -1,7 +1,7 @@
 /bcs/
 /.idea/
-/hidden_bat_dis.vbs/
-/hidden_bat_en.vbs/
-/enable_vpn.bat/
-/disable_vpn.bat/
+/src/BewardControlSystem/hidden_bat_dis.vbs/
+/src/BewardControlSystem/hidden_bat_en.vbs/
+/src/BewardControlSystem/enable_vpn.bat/
+/src/BewardControlSystem/disable_vpn.bat/
 /venv/
