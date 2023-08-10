@@ -13,6 +13,7 @@ import os
 from tkinter.messagebox import askyesno
 import requests
 from functions import update_combobox_company_values, disable_vpn
+import re
 
 class MainWindow(tk.Tk):
     def __init__(self,*args, **kwargs):
@@ -302,8 +303,29 @@ class MainWindow(tk.Tk):
 
 
             show_keys_window = Tk()
-            list_mf = Label(show_keys_window, text=r.text)
+            all_information = r.text
+            list_keys = ''
+            print(all_information)
+            while True:
+                find_key_word = all_information.find('Key')
+                if find_key_word == -1:
+                    break
+                all_information = all_information[find_key_word:]
+                first_key = all_information.find('=')
+                if first_key == -1:
+                    break
+                start = first_key + 1
+                end = first_key + 15
+                list_keys += all_information[start:end]+'\n'
+                all_information = all_information[end+1:]
+
+
+            #if re.search(r'\Key')
+
+
+            list_mf = Label(show_keys_window, text=list_keys)
             list_mf.pack()
+            #print(r.text)
 
         show_all_mifare_keys_btn = Button(bwd_controller_frame, text='Показать список\nMIFARE ключей', command=show_all_mifare_keys)
         show_all_mifare_keys_btn.grid(row=1, column=0, padx=10, pady=10)
