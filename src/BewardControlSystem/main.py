@@ -303,9 +303,28 @@ class MainWindow(tk.Tk):
 
 
             show_keys_window = Tk()
+
             all_information = r.text
             list_keys = ''
             print(all_information)
+            mf_tree_frame = ttk.Frame(show_keys_window)
+            mf_tree_frame.pack(fill=BOTH, expand=True)
+            tree_scroll = Scrollbar(mf_tree_frame)
+            tree_scroll.pack(side=RIGHT, fill=Y)
+            tree_mf = ttk.Treeview(mf_tree_frame, yscrollcommand=tree_scroll.set,
+                                   selectmode="extended",
+                                   columns=('ID', 'key_value'),
+                                   height=10, show='headings')
+
+            tree_mf.heading('ID', text='ID')
+            tree_mf.heading('key_value', text='Код ключа')
+
+            tree_mf.column('ID', width=50, anchor=CENTER)
+            tree_mf.column('key_value', width=250, anchor=CENTER)
+
+            tree_mf.yview()
+            tree_mf.pack(side=TOP, fill=X)
+            i=1
             while True:
                 find_key_word = all_information.find('Key')
                 if find_key_word == -1:
@@ -316,16 +335,14 @@ class MainWindow(tk.Tk):
                     break
                 start = first_key + 1
                 end = first_key + 15
+                key = all_information[start:end]
                 list_keys += all_information[start:end]+'\n'
                 all_information = all_information[end+1:]
+                i += 1
+                values_mf = [i, key]
+                tree_mf.insert('', 'end', values=values_mf)
 
 
-            #if re.search(r'\Key')
-
-
-            list_mf = Label(show_keys_window, text=list_keys)
-            list_mf.pack()
-            #print(r.text)
 
         show_all_mifare_keys_btn = Button(bwd_controller_frame, text='Показать список\nMIFARE ключей', command=show_all_mifare_keys)
         show_all_mifare_keys_btn.grid(row=1, column=0, padx=10, pady=10)
