@@ -306,7 +306,7 @@ class MainWindow(tk.Tk):
 
             all_information = r.text
             list_keys = ''
-            print(all_information)
+
             mf_tree_frame = ttk.Frame(show_keys_window)
             mf_tree_frame.pack(fill=BOTH, expand=True)
             tree_scroll = Scrollbar(mf_tree_frame)
@@ -352,9 +352,46 @@ class MainWindow(tk.Tk):
             login = self.login_bwd_entry.get()
             password = self.password_bwd_entry.get()
             r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/rfid_cgi?action=list''')
-            show_keys_window = Tk()
-            list_rfid = Label(show_keys_window, text=r.text)
-            list_rfid.pack()
+            show_rfid_window = Tk()
+
+            all_information = r.text
+            list_keys = ''
+
+            mf_tree_frame = ttk.Frame(show_rfid_window)
+            mf_tree_frame.pack(fill=BOTH, expand=True)
+            tree_scroll = Scrollbar(mf_tree_frame)
+            tree_scroll.pack(side=RIGHT, fill=Y)
+            tree_mf = ttk.Treeview(mf_tree_frame, yscrollcommand=tree_scroll.set,
+                                   selectmode="extended",
+                                   columns=('ID', 'key_value'),
+                                   height=10, show='headings')
+
+            tree_mf.heading('ID', text='ID')
+            tree_mf.heading('key_value', text='Код ключа')
+
+            tree_mf.column('ID', width=50, anchor=CENTER)
+            tree_mf.column('key_value', width=250, anchor=CENTER)
+
+            tree_mf.yview()
+            tree_mf.pack(side=TOP, fill=X)
+            print(r.text)
+            i = 1
+            while True:
+                find_key_word = all_information.find('KeyValue')
+                if find_key_word == -1:
+                    break
+                all_information = all_information[find_key_word:]
+                first_key = all_information.find('=')
+                if first_key == -1:
+                    break
+                start = first_key + 1
+                end = first_key + 15
+                key = all_information[start:end]
+                list_keys += all_information[start:end] + '\n'
+                all_information = all_information[end + 1:]
+                i += 1
+                values_mf = [i, key]
+                tree_mf.insert('', 'end', values=values_mf)
 
         show_all_rfid_keys_btn = Button(bwd_controller_frame, text='Показать список\nRFID ключей', command=show_all_rfid_keys)
         show_all_rfid_keys_btn.grid(row=1, column=1, padx=10, pady=10)
