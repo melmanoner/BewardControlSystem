@@ -10,6 +10,7 @@ from tkinter import ttk
 import csv
 from ttkthemes import ThemedStyle
 import os
+from tkinter import messagebox as mbox
 from tkinter.messagebox import askyesno
 import requests
 from functions import update_combobox_company_values, disable_vpn
@@ -274,7 +275,17 @@ class MainWindow(tk.Tk):
         bwd_controller_frame = LabelFrame(bottom_frame, text='Контроллер')
         bwd_controller_frame.pack(fill='x', padx=20, side=RIGHT)
 
-        open_door = Button(bwd_controller_frame, text='Открыть дверь',cursor = 'hand2')
+        def open_door():
+            login = self.login_bwd_entry.get()
+            password = self.password_bwd_entry.get()
+            ip = self.ip_entry.get()
+            r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/intercom_cgi?action=maindoor''')
+            if r.status_code == 200:
+                mbox.showinfo('Успешно', 'Дверь открыта')
+            else:
+                mbox.showinfo('Что-то пошло не так', 'Ошибка открытия двери')
+
+        open_door = Button(bwd_controller_frame, text='Открыть дверь',cursor = 'hand2', command=open_door)
         open_door.grid(row=0, column=0, padx=10, pady=10)
 
         autorecord = Button(bwd_controller_frame, text='Включить автозапись', cursor='hand2')
@@ -289,7 +300,7 @@ class MainWindow(tk.Tk):
         add_key_btn = Button(bwd_controller_frame, text='Добавить ключ')
         add_key_btn.grid(row=0, column=4, padx=10, pady=10)
 
-        delete_key_button = Label(bwd_controller_frame, text='Удалить')
+        delete_key_button = Button(bwd_controller_frame, text='Удалить')
         delete_key_button.grid(row=0, column=5, padx=10,pady=10)
 
 
@@ -305,7 +316,6 @@ class MainWindow(tk.Tk):
             show_keys_window = Tk()
 
             all_information = r.text
-            list_keys = ''
 
             mf_tree_frame = ttk.Frame(show_keys_window)
             mf_tree_frame.pack(fill=BOTH, expand=True)
@@ -336,11 +346,11 @@ class MainWindow(tk.Tk):
                 start = first_key + 1
                 end = first_key + 15
                 key = all_information[start:end]
-                list_keys += all_information[start:end]+'\n'
                 all_information = all_information[end+1:]
                 i += 1
                 values_mf = [i, key]
                 tree_mf.insert('', 'end', values=values_mf)
+
 
 
 
@@ -355,7 +365,7 @@ class MainWindow(tk.Tk):
             show_rfid_window = Tk()
 
             all_information = r.text
-            list_keys = ''
+
 
             mf_tree_frame = ttk.Frame(show_rfid_window)
             mf_tree_frame.pack(fill=BOTH, expand=True)
@@ -386,7 +396,6 @@ class MainWindow(tk.Tk):
                 start = first_key + 1
                 end = first_key + 15
                 key = all_information[start:end]
-                list_keys += all_information[start:end] + '\n'
                 all_information = all_information[end + 1:]
                 i += 1
                 values_mf = [i, key]
@@ -536,8 +545,6 @@ class ChildAddCompany(tk.Tk):
         self.child_for_add_company_to_list()
 
     def child_for_add_company_to_list(self):
-        #child_window = Tk()
-        #child_window.title('Добавить обслуживающую организацию')
         self.style = ThemedStyle(self)
         self.style.set_theme("arc")
         self.company_entry = ttk.Entry(self)
