@@ -374,7 +374,6 @@ class MainWindow(tk.Tk):
 
             tree_mf.yview()
             tree_mf.pack(side=TOP, fill=X)
-            print(r.text)
             i = 1
             while True:
                 find_key_word = all_information.find('KeyValue')
