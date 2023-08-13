@@ -139,6 +139,7 @@ class MainWindow(tk.Tk):
         self.login_bwd_entry.grid(row=1, column=1, padx=10, pady=10)
         entris.append(self.login_bwd_entry)
 
+
         self.password_bwd_label = Label(self.data_frame, text='Пароль')
         self.password_bwd_label.grid(row=1, column=2, padx=10, pady=10)
         self.password_bwd_entry = Entry(self.data_frame, show='*')
@@ -160,8 +161,6 @@ class MainWindow(tk.Tk):
         self.owner_entry = ttk.Combobox(self.data_frame, values=lists_for_combobox, state="readonly")
         self.owner_entry.grid(row=0, column=5, padx=10, pady=10)
         entris.append(self.owner_entry)
-
-
 
         #####################
 
@@ -276,19 +275,45 @@ class MainWindow(tk.Tk):
         bwd_controller_frame.pack(fill='x', padx=20, side=RIGHT)
 
         def open_door():
-            login = self.login_bwd_entry.get()
-            password = self.password_bwd_entry.get()
-            ip = self.ip_entry.get()
-            r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/intercom_cgi?action=maindoor''')
-            if r.status_code == 200:
-                mbox.showinfo('Успешно', 'Дверь открыта')
-            else:
-                mbox.showinfo('Что-то пошло не так', 'Ошибка открытия двери')
+            try:
+                login = self.login_bwd_entry.get()
+                password = self.password_bwd_entry.get()
+                ip = self.ip_entry.get()
+                r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/intercom_cgi?action=maindoor''')
+                if r.status_code == 200:
+                    mbox.showinfo('Успешно', 'Дверь открыта')
+                else:
+                    mbox.showinfo('Что-то пошло не так', 'Ошибка открытия двери')
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и включён ли VPN')
 
         open_door = Button(bwd_controller_frame, text='Открыть дверь',cursor = 'hand2', command=open_door)
         open_door.grid(row=0, column=0, padx=10, pady=10)
 
-        autorecord = Button(bwd_controller_frame, text='Включить автозапись', cursor='hand2')
+        enabled = IntVar()
+
+        def autocollectkeys():
+            login = self.login_bwd_entry.get()
+            password = self.password_bwd_entry.get()
+            ip = self.ip_entry.get()
+            try:
+                if enabled.get() == 1:
+                    r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=on''')
+                    print('Автозапись включена')
+                    if r.status_code == 200:
+                        mbox.showinfo('Успешно','Автозапись включена')
+                    else:
+                        mbox.showwarning('Ошибка','Ошбика включения автозаписи')
+                elif enabled.get() == 0:
+                    r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=off''')
+                    if r.status_code == 200:
+                        mbox.showinfo('Успешно','Автозапись отключена')
+                    else:
+                        mbox.showwarning('Ошибка','Ошбика отключения автозаписи')
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и включён ли VPN')
+
+        autorecord = Checkbutton(bwd_controller_frame, text='Включить автозапись', cursor='hand2',variable=enabled, command=autocollectkeys)
         autorecord.grid(row=0, column=1,padx=10, pady=10)
 
         key_label = Label(bwd_controller_frame, text='Ключ')
@@ -307,49 +332,52 @@ class MainWindow(tk.Tk):
         # Create func for show all keys in bwd
 
         def show_all_mifare_keys():
-            ip = self.ip_entry.get()
-            login = self.login_bwd_entry.get()
-            password = self.password_bwd_entry.get()
-            r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/mifare_cgi?action=list''')
+            try:
+                ip = self.ip_entry.get()
+                login = self.login_bwd_entry.get()
+                password = self.password_bwd_entry.get()
+                r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/mifare_cgi?action=list''')
 
 
-            show_keys_window = Tk()
+                show_keys_window = Tk()
 
-            all_information = r.text
+                all_information = r.text
 
-            mf_tree_frame = ttk.Frame(show_keys_window)
-            mf_tree_frame.pack(fill=BOTH, expand=True)
-            tree_scroll = Scrollbar(mf_tree_frame)
-            tree_scroll.pack(side=RIGHT, fill=Y)
-            tree_mf = ttk.Treeview(mf_tree_frame, yscrollcommand=tree_scroll.set,
-                                   selectmode="extended",
-                                   columns=('ID', 'key_value'),
-                                   height=10, show='headings')
+                mf_tree_frame = ttk.Frame(show_keys_window)
+                mf_tree_frame.pack(fill=BOTH, expand=True)
+                tree_scroll = Scrollbar(mf_tree_frame)
+                tree_scroll.pack(side=RIGHT, fill=Y)
+                tree_mf = ttk.Treeview(mf_tree_frame, yscrollcommand=tree_scroll.set,
+                                       selectmode="extended",
+                                       columns=('ID', 'key_value'),
+                                       height=10, show='headings')
 
-            tree_mf.heading('ID', text='ID')
-            tree_mf.heading('key_value', text='Код ключа')
+                tree_mf.heading('ID', text='ID')
+                tree_mf.heading('key_value', text='Код ключа')
 
-            tree_mf.column('ID', width=50, anchor=CENTER)
-            tree_mf.column('key_value', width=250, anchor=CENTER)
+                tree_mf.column('ID', width=50, anchor=CENTER)
+                tree_mf.column('key_value', width=250, anchor=CENTER)
 
-            tree_mf.yview()
-            tree_mf.pack(side=TOP, fill=X)
-            i=1
-            while True:
-                find_key_word = all_information.find('Key')
-                if find_key_word == -1:
-                    break
-                all_information = all_information[find_key_word:]
-                first_key = all_information.find('=')
-                if first_key == -1:
-                    break
-                start = first_key + 1
-                end = first_key + 15
-                key = all_information[start:end]
-                all_information = all_information[end+1:]
-                i += 1
-                values_mf = [i, key]
-                tree_mf.insert('', 'end', values=values_mf)
+                tree_mf.yview()
+                tree_mf.pack(side=TOP, fill=X)
+                i=1
+                while True:
+                    find_key_word = all_information.find('Key')
+                    if find_key_word == -1:
+                        break
+                    all_information = all_information[find_key_word:]
+                    first_key = all_information.find('=')
+                    if first_key == -1:
+                        break
+                    start = first_key + 1
+                    end = first_key + 15
+                    key = all_information[start:end]
+                    all_information = all_information[end+1:]
+                    i += 1
+                    values_mf = [i, key]
+                    tree_mf.insert('', 'end', values=values_mf)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и включён ли VPN')
 
 
 
@@ -358,48 +386,52 @@ class MainWindow(tk.Tk):
         show_all_mifare_keys_btn.grid(row=1, column=0, padx=10, pady=10)
 
         def show_all_rfid_keys():
-            ip = self.ip_entry.get()
-            login = self.login_bwd_entry.get()
-            password = self.password_bwd_entry.get()
-            r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/rfid_cgi?action=list''')
-            show_rfid_window = Tk()
+            try:
+                ip = self.ip_entry.get()
+                login = self.login_bwd_entry.get()
+                password = self.password_bwd_entry.get()
+                r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/rfid_cgi?action=list''')
+                show_rfid_window = Tk()
 
-            all_information = r.text
+                all_information = r.text
 
 
-            mf_tree_frame = ttk.Frame(show_rfid_window)
-            mf_tree_frame.pack(fill=BOTH, expand=True)
-            tree_scroll = Scrollbar(mf_tree_frame)
-            tree_scroll.pack(side=RIGHT, fill=Y)
-            tree_mf = ttk.Treeview(mf_tree_frame, yscrollcommand=tree_scroll.set,
-                                   selectmode="extended",
-                                   columns=('ID', 'key_value'),
-                                   height=10, show='headings')
+                mf_tree_frame = ttk.Frame(show_rfid_window)
+                mf_tree_frame.pack(fill=BOTH, expand=True)
+                tree_scroll = Scrollbar(mf_tree_frame)
+                tree_scroll.pack(side=RIGHT, fill=Y)
+                tree_mf = ttk.Treeview(mf_tree_frame, yscrollcommand=tree_scroll.set,
+                                       selectmode="extended",
+                                       columns=('ID', 'key_value'),
+                                       height=10, show='headings')
 
-            tree_mf.heading('ID', text='ID')
-            tree_mf.heading('key_value', text='Код ключа')
+                tree_mf.heading('ID', text='ID')
+                tree_mf.heading('key_value', text='Код ключа')
 
-            tree_mf.column('ID', width=50, anchor=CENTER)
-            tree_mf.column('key_value', width=250, anchor=CENTER)
+                tree_mf.column('ID', width=50, anchor=CENTER)
+                tree_mf.column('key_value', width=250, anchor=CENTER)
 
-            tree_mf.yview()
-            tree_mf.pack(side=TOP, fill=X)
-            i = 1
-            while True:
-                find_key_word = all_information.find('KeyValue')
-                if find_key_word == -1:
-                    break
-                all_information = all_information[find_key_word:]
-                first_key = all_information.find('=')
-                if first_key == -1:
-                    break
-                start = first_key + 1
-                end = first_key + 15
-                key = all_information[start:end]
-                all_information = all_information[end + 1:]
-                i += 1
-                values_mf = [i, key]
-                tree_mf.insert('', 'end', values=values_mf)
+                tree_mf.yview()
+                tree_mf.pack(side=TOP, fill=X)
+                i = 1
+
+                while True:
+                    find_key_word = all_information.find('KeyValue')
+                    if find_key_word == -1:
+                        break
+                    all_information = all_information[find_key_word:]
+                    first_key = all_information.find('=')
+                    if first_key == -1:
+                        break
+                    start = first_key + 1
+                    end = first_key + 15
+                    key = all_information[start:end]
+                    all_information = all_information[end + 1:]
+                    i += 1
+                    values_mf = [i, key]
+                    tree_mf.insert('', 'end', values=values_mf)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и включён ли VPN')
 
         show_all_rfid_keys_btn = Button(bwd_controller_frame, text='Показать список\nRFID ключей', command=show_all_rfid_keys)
         show_all_rfid_keys_btn.grid(row=1, column=1, padx=10, pady=10)
