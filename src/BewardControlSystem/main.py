@@ -322,7 +322,24 @@ class MainWindow(tk.Tk):
         add_key_entry = Entry(bwd_controller_frame)
         add_key_entry.grid(row=0, column=3, padx=10, pady=10)
 
-        add_key_btn = Button(bwd_controller_frame, text='Добавить ключ')
+        #mifare_cgi?action=add&Key=806F858A0F6605
+
+        def add_key():
+            try:
+                login = self.login_bwd_entry.get()
+                password = self.password_bwd_entry.get()
+                ip = self.ip_entry.get()
+                key_value = add_key_entry.get()
+                r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/mifare_cgi?action=add&Key={key_value}''')
+                if r.status_code == 200:
+                    add_key_entry.delete(0, END)
+                    mbox.showinfo('Успешно', 'Ключ добавлен')
+                else:
+                    mbox.showwarning('Ошибка', 'Ключ не добавленг')
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+        add_key_btn = Button(bwd_controller_frame, text='Добавить ключ', command=add_key)
         add_key_btn.grid(row=0, column=4, padx=10, pady=10)
 
         delete_key_button = Button(bwd_controller_frame, text='Удалить')
