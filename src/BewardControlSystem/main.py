@@ -3,7 +3,7 @@ import tkinter as tk
 from mysql_connector import add_new_address, \
     values_table,values_vpn_table, delete_select_address, delete_select_vpn,\
     edt_address, add_new_vpn, edit_vpn,select_vpn_name,selection_log_and_pass_by_name,\
-    remove_all_bwd,remove_all_vpn,values_company_table,add_company_to_listbox,delete_company
+    remove_all_bwd,remove_all_vpn,values_company_table,add_company_to_listbox,delete_company,select_all_bwd_by_logpas
 
 from tkinter import *
 from tkinter import ttk
@@ -119,18 +119,21 @@ class MainWindow(tk.Tk):
         self.id_entry = Entry(self.data_frame)
         self.id_entry.grid_remove()
         entris.append(self.id_entry)
+        self.id = self.id_entry.get()
 
         self.address_label = Label(self.data_frame, text="Адрес")
         self.address_label.grid(row=0, column=0, padx=10, pady=10)
         self.address_entry = Entry(self.data_frame)
         self.address_entry.grid(row=0, column=1, padx=10, pady=10)
         entris.append(self.address_entry)
+        self.address = self.address_entry.get()
 
         self.ip_label = Label(self.data_frame, text="IP")
         self.ip_label.grid(row=0, column=2, padx=10, pady=10)
         self.ip_entry = Entry(self.data_frame)
         self.ip_entry.grid(row=0, column=3, padx=10, pady=10)
         entris.append(self.ip_entry)
+        self.ip = self.ip_entry.get()
 
 
         self.login_bwd_label = Label(self.data_frame, text='Логин')
@@ -138,6 +141,7 @@ class MainWindow(tk.Tk):
         self.login_bwd_entry = Entry(self.data_frame)
         self.login_bwd_entry.grid(row=1, column=1, padx=10, pady=10)
         entris.append(self.login_bwd_entry)
+        self.login = self.login_bwd_entry.get()
 
 
         self.password_bwd_label = Label(self.data_frame, text='Пароль')
@@ -145,6 +149,7 @@ class MainWindow(tk.Tk):
         self.password_bwd_entry = Entry(self.data_frame, show='*')
         self.password_bwd_entry.grid(row=1, column=3, padx=10, pady=10)
         entris.append(self.password_bwd_entry)
+        self.password = self.password_bwd_entry.get()
 
         # there was
         # Update company combobox
@@ -161,6 +166,7 @@ class MainWindow(tk.Tk):
         self.owner_entry = ttk.Combobox(self.data_frame, values=lists_for_combobox, state="readonly")
         self.owner_entry.grid(row=0, column=5, padx=10, pady=10)
         entris.append(self.owner_entry)
+        self.owner = self.owner_entry.get()
 
         #####################
 
@@ -173,12 +179,7 @@ class MainWindow(tk.Tk):
         button_frame.pack(fill=X, padx=20)
 
         def add_bwd():
-            address = self.address_entry.get()
-            ip = self.ip_entry.get()
-            login = self.login_bwd_entry.get()
-            password = self.password_bwd_entry.get()
-            owner = self.owner_entry.get()
-            add_new_address(address, ip, login, password, owner)
+            add_new_address(self.address, self.ip, self.login, self.password, self.owner)
             clear_entris()
             view_table()
         add_button = Button(button_frame, text="Добавить",cursor = 'hand2', command=add_bwd)
@@ -186,13 +187,7 @@ class MainWindow(tk.Tk):
 
         # Edit button
         def edit_address():
-            address = self.address_entry.get()
-            ip = self.ip_entry.get()
-            login = self.login_bwd_entry.get()
-            password = self.password_bwd_entry.get()
-            owner = self.owner_entry.get()
-            id = self.id_entry.get()
-            edt_address(id, address,ip,login,password,owner)
+            edt_address(self.id, self.address,self.ip,self.login,self.password,self.owner)
             view_table()
 
 
@@ -200,7 +195,7 @@ class MainWindow(tk.Tk):
         edit_button.grid(row=0, column=1, padx=10, pady=10)
 
         def remove_command():
-            delete_select_address(self.id_entry.get())
+            delete_select_address(self.id)
             view_table()
         remove_button = Button(button_frame, text="Удалить выбранный", command=remove_command,cursor = 'hand2')
         remove_button.grid(row=0, column=2, padx=10, pady=10)
@@ -276,10 +271,7 @@ class MainWindow(tk.Tk):
 
         def open_door():
             try:
-                login = self.login_bwd_entry.get()
-                password = self.password_bwd_entry.get()
-                ip = self.ip_entry.get()
-                r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/intercom_cgi?action=maindoor''')
+                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/intercom_cgi?action=maindoor''')
                 if r.status_code == 200:
                     mbox.showinfo('Успешно', 'Дверь открыта')
                 else:
@@ -293,19 +285,16 @@ class MainWindow(tk.Tk):
         enabled = IntVar()
 
         def autocollectkeys():
-            login = self.login_bwd_entry.get()
-            password = self.password_bwd_entry.get()
-            ip = self.ip_entry.get()
             try:
                 if enabled.get() == 1:
-                    r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=on''')
+                    r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=on''')
                     print('Автозапись включена')
                     if r.status_code == 200:
                         mbox.showinfo('Успешно','Автозапись включена')
                     else:
                         mbox.showwarning('Ошибка','Ошбика включения автозаписи')
                 elif enabled.get() == 0:
-                    r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=off''')
+                    r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=off''')
                     if r.status_code == 200:
                         mbox.showinfo('Успешно','Автозапись отключена')
                     else:
@@ -316,44 +305,112 @@ class MainWindow(tk.Tk):
         autorecord = Checkbutton(bwd_controller_frame, text='Включить автозапись', cursor='hand2',variable=enabled, command=autocollectkeys)
         autorecord.grid(row=0, column=1,padx=10, pady=10)
 
-        key_label = Label(bwd_controller_frame, text='Ключ')
+        key_label = Label(bwd_controller_frame, text='Ключ/Индекс/Код')
         key_label.grid(row=0, column=2,padx=10, pady=10)
 
         add_key_entry = Entry(bwd_controller_frame)
         add_key_entry.grid(row=0, column=3, padx=10, pady=10)
+        key_value = add_key_entry.get()
 
         #mifare_cgi?action=add&Key=806F858A0F6605
 
         def add_key():
             try:
-                login = self.login_bwd_entry.get()
-                password = self.password_bwd_entry.get()
-                ip = self.ip_entry.get()
-                key_value = add_key_entry.get()
-                r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/mifare_cgi?action=add&Key={key_value}''')
-                if r.status_code == 200:
+                mifare = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=add&Key={key_value}''')
+                rfid = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=add&Key={key_value}''')
+                if mifare.status_code or rfid.status_code == 200:
                     add_key_entry.delete(0, END)
                     mbox.showinfo('Успешно', 'Ключ добавлен')
                 else:
-                    mbox.showwarning('Ошибка', 'Ключ не добавленг')
+                    mbox.showwarning('Ошибка', 'Ключ не добавлен')
             except Exception:
                 mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
 
-        add_key_btn = Button(bwd_controller_frame, text='Добавить ключ', command=add_key)
+        add_key_btn = Button(bwd_controller_frame, text='Добавить ключ', cursor='hand2', command=add_key)
         add_key_btn.grid(row=0, column=4, padx=10, pady=10)
 
-        delete_key_button = Button(bwd_controller_frame, text='Удалить')
+        def add_key_to_all_bwd():
+            try:
+                ip_list = select_all_bwd_by_logpas(self.login, self.password)
+                i=0
+                for ip in ip_list:
+                    add_key_rfid = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/rfid_cgi?action=add&Key={key_value}''')
+                    add_key_mifare = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/mifare_cgi?action=add&Key={key_value}''')
+                    if add_key_rfid.status_code or add_key_mifare.status_code == 200:
+                        i+=1
+                mbox.showinfo('Успешно',f'''Ключ добавлен в {i} панель(и/ей)''')
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+
+        add_key_to_all_bwd_btn = Button(bwd_controller_frame, text='Добавить во все панели', cursor='hand2', command=add_key_to_all_bwd)
+        add_key_to_all_bwd_btn.grid(row=1, column=4, pady=10,padx=10)
+
+        def add_code_for_scan_rfid():
+            try:
+                code_value = add_key_entry.get()
+                add_code = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&ScanCode={code_value}&ScanCodeActive=on''')
+                if add_code.status_code == 200:
+                    mbox.showinfo('Успешно', 'Код для записи ключей успешно установлен')
+                else:
+                    mbox.showwarning('Ошибка', 'Что-то пошло не так. Код не установлен')
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+        add_scan_code = Button(bwd_controller_frame, text='Установить код сканирования RFID', cursor='hand2', command=add_code_for_scan_rfid)
+        add_scan_code.grid(row=1, column=2, pady=10,padx=10)
+
+        def disable_scan_code():
+            try:
+                disable_code = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&ScanCodeActive=off''')
+                if disable_code.status_code == 200:
+                    mbox.showinfo('Успешно', 'Код отключен')
+                else:
+                    mbox.showwarning('Ошибка', 'Ошибка отключения кода')
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN', cursor='hand2', command=disable_scan_code)
+        scan_code_off_btn = Button(bwd_controller_frame, text='Отключить код сканирования')
+        scan_code_off_btn.grid(row=1, column=3, pady=10, padx=10)
+
+
+        def delete_key():
+            try:
+                mifare = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=delete&Key={key_value}''')
+                rfid = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=delete&Key={key_value}''')
+                if mifare.status_code or rfid.status_code == 200:
+                    add_key_entry.delete(0, END)
+                    mbox.showinfo('Успешно', 'Ключ удален')
+                else:
+                    mbox.showwarning('Ошибка', 'Ошибка удаления')
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+        delete_key_button = Button(bwd_controller_frame, text='Удалить', cursor='hand2', command=delete_key)
         delete_key_button.grid(row=0, column=5, padx=10,pady=10)
+
+        def delete_key_in_all_bwd():
+            try:
+                ip_list = select_all_bwd_by_logpas(self.login, self.password)
+                i=0
+                for ip in ip_list:
+                    delete_key_rfid = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/rfid_cgi?action=delete&Key={key_value}''')
+                    delete_key_mifare = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/mifare_cgi?action=delete&Key={key_value}''')
+                    if delete_key_mifare.status_code or delete_key_rfid.status_code == 200:
+                        i+=1
+                mbox.showinfo('Успешно',f'''Ключ удален в {i} панель''')
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+
+        add_key_to_all_bwd_btn = Button(bwd_controller_frame, text='Удалить со всех панелей', cursor='hand2', command=delete_key_in_all_bwd)
+        add_key_to_all_bwd_btn.grid(row=1, column=5, pady=10,padx=10)
 
 
         # Create func for show all keys in bwd
 
         def show_all_mifare_keys():
             try:
-                ip = self.ip_entry.get()
-                login = self.login_bwd_entry.get()
-                password = self.password_bwd_entry.get()
-                r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/mifare_cgi?action=list''')
+                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=list''')
 
 
                 show_keys_window = Tk()
@@ -399,15 +456,12 @@ class MainWindow(tk.Tk):
 
 
 
-        show_all_mifare_keys_btn = Button(bwd_controller_frame, text='Показать список\nMIFARE ключей', command=show_all_mifare_keys)
+        show_all_mifare_keys_btn = Button(bwd_controller_frame, text='Показать список\nMIFARE ключей', cursor='hand2', command=show_all_mifare_keys)
         show_all_mifare_keys_btn.grid(row=1, column=0, padx=10, pady=10)
 
         def show_all_rfid_keys():
             try:
-                ip = self.ip_entry.get()
-                login = self.login_bwd_entry.get()
-                password = self.password_bwd_entry.get()
-                r = requests.get(f'''http://{login}:{password}@{ip}/cgi-bin/rfid_cgi?action=list''')
+                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=list''')
                 show_rfid_window = Tk()
 
                 all_information = r.text
@@ -450,8 +504,9 @@ class MainWindow(tk.Tk):
             except Exception:
                 mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и включён ли VPN')
 
-        show_all_rfid_keys_btn = Button(bwd_controller_frame, text='Показать список\nRFID ключей', command=show_all_rfid_keys)
+        show_all_rfid_keys_btn = Button(bwd_controller_frame, text='Показать список\nRFID ключей', cursor='hand2', command=show_all_rfid_keys)
         show_all_rfid_keys_btn.grid(row=1, column=1, padx=10, pady=10)
+
         #--------------------------------------------------------------------------------------------------#
         ####################################################################################################
         # Double click selection---------------------------------------------------------------------------#
@@ -503,35 +558,41 @@ class MainWindow(tk.Tk):
         self.id_vpn_entry = Entry(self.vpn_label_frame)
         self.id_vpn_entry.grid_remove()
         entris_vpn.append(self.id_vpn_entry)
+        self.id_vpn = self.id_vpn_entry.get()
+
         self.owner_vpn_label = Label(self.vpn_label_frame, text="Владелец")
         self.owner_vpn_label.grid(row=0, column=0, padx=10, pady=10)
         self.owner_vpn_entry = ttk.Combobox(self.vpn_label_frame, values=lists_for_combobox,state="readonly")
         self.owner_vpn_entry.grid(row=0, column=1, padx=10, pady=10)
         entris_vpn.append(self.owner_vpn_entry)
+        self.owner_vpn = self.owner_vpn_entry.get()
+
         self.name_vpn_label = Label(self.vpn_label_frame, text="Название сети")
         self.name_vpn_label.grid(row=0, column=2, padx=10, pady=10)
         self.name_vpn_entry = Entry(self.vpn_label_frame)
         self.name_vpn_entry.grid(row=0, column=3, padx=10, pady=10)
         entris_vpn.append(self.name_vpn_entry)
+        self.name_vpn = self.name_vpn_entry.get()
+
         self.login_vpn_label = Label(self.vpn_label_frame, text="Логин")
         self.login_vpn_label.grid(row=0, column=4, padx=10, pady=10)
         self.login_vpn_entry = Entry(self.vpn_label_frame)
         self.login_vpn_entry.grid(row=0, column=5, padx=10, pady=10)
         entris_vpn.append(self.login_vpn_entry)
+        self.login_vpn = self.login_vpn_entry.get()
+
         self.password_vpn_label = Label(self.vpn_label_frame, text="Пароль")
         self.password_vpn_label.grid(row=0, column=6, padx=10, pady=10)
         self.password_vpn_entry = Entry(self.vpn_label_frame, show='*')
         self.password_vpn_entry.grid(row=0, column=7, padx=10, pady=10)
         entris_vpn.append(self.password_vpn_entry)
+        self.password_vpn = self.password_vpn_entry.get()
+
         self.control_vpn_frame = LabelFrame(self.vpn_frame, text='Управление списком VPN')
         self.control_vpn_frame.pack(fill=X, padx=20)
         # Create add vpn func
         def add_vpn():
-            owner = self.owner_vpn_entry.get()
-            name = self.name_vpn_entry.get()
-            login = self.login_vpn_entry.get()
-            password = self.password_vpn_entry.get()
-            add_new_vpn(owner, name, login, password)
+            add_new_vpn(self.owner_vpn, self.name_vpn, self.login_vpn, self.password_vpn)
             for entry in entris_vpn:
                 entry.delete(0, 'end')
             view_vpn_table()
@@ -541,19 +602,14 @@ class MainWindow(tk.Tk):
         add_vpn_button.grid(row=0, column=0, padx=10, pady=10)
         # Button for edit vpn
         def edit_select_vpn():
-            id = self.id_vpn_entry.get()
-            owner = self.owner_vpn_entry.get()
-            name = self.name_vpn_entry.get()
-            login = self.login_vpn_entry.get()
-            password = self.password_vpn_entry.get()
-            edit_vpn(id, owner, name, login, password)
+            edit_vpn(self.id_vpn, self.owner_entry, self.name_vpn, self.login_vpn, self.password_vpn)
             view_vpn_table()
             show_vpn()
         edit_vpn_button = Button(self.control_vpn_frame, text='Изменить', command=edit_select_vpn)
         edit_vpn_button.grid(row=0, column=1, padx=10, pady=10)
         # Button for delete vpn
         def delete_sel_vpn():
-            delete_select_vpn(self.id_vpn_entry.get())
+            delete_select_vpn(self.id_vpn)
             view_vpn_table()
             show_vpn()
         self.delete_vpn_button = Button(self.control_vpn_frame, text="Удалить", cursor='hand2', command=delete_sel_vpn)

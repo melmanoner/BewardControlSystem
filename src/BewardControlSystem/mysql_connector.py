@@ -356,3 +356,23 @@ def delete_company(company_name):
     finally:
         cursor.close()
         conn.close()
+
+def select_all_bwd_by_logpas(login, password):
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        select = f'''
+        SELECT ip FROM 
+        address_list WHERE login='{login}' and password = '{password}'
+         '''
+        cursor.execute(select)
+        ip  = cursor.fetchall()
+        return ip
+    except Error as error:
+        print('Ошибка выборки по логину и паролю', error)
+    finally:
+        cursor.close()
+        conn.close()
