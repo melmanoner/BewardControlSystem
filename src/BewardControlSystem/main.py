@@ -61,6 +61,24 @@ class MainWindow(tk.Tk):
         self.notebook.add(self.bwd_frame, text='Бевард')
         self.notebook.add(self.vpn_frame, text='VPN')
 
+        def filterTreeView(*args):
+            ItemsOnTreeView = self.tree.get_children()
+            search = self.search_ent_var.get().capitalize()
+            for eachItem in ItemsOnTreeView:
+                if search in self.tree.item(eachItem)['values'][1]:
+                    self.search_ent_var = self.tree.item(eachItem)['values']
+                    self.tree.delete(eachItem)
+
+                    self.tree.insert("", 0, values=self.search_ent_var)
+
+        self.search_ent_var = StringVar()
+        self.search_entry = Entry(self.bwd_frame, width=150, textvariable=self.search_ent_var)
+        self.search_entry.pack(pady=10)
+        #self.search_entry.insert(0,'Поиск')
+        self.search_ent_var.trace('w', filterTreeView)
+
+
+
 
 
         # Create a bwd frame
@@ -346,18 +364,19 @@ class MainWindow(tk.Tk):
         add_key_to_all_bwd_btn = Button(bwd_controller_frame, text='Добавить во все панели', cursor='hand2', command=add_key_to_all_bwd)
         add_key_to_all_bwd_btn.grid(row=1, column=4, pady=10,padx=10)
 
-        def add_code_for_scan_rfid():
+        def add_code_for_scan():
             try:
                 code_value = add_key_entry.get()
-                add_code = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&ScanCode={code_value}&ScanCodeActive=on''')
-                if add_code.status_code == 200:
+                add_code_mf = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&ScanCode={code_value}&ScanCodeActive=on''')
+                add_code_rf = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=set&RegCode={code_value}&ScanCodeActive=on''')
+                if add_code_mf.status_code or add_code_rf.status_code == 200:
                     mbox.showinfo('Успешно', 'Код для записи ключей успешно установлен')
                 else:
                     mbox.showwarning('Ошибка', 'Что-то пошло не так. Код не установлен')
             except Exception:
                 mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
 
-        add_scan_code = Button(bwd_controller_frame, text='Установить код сканирования RFID', cursor='hand2', command=add_code_for_scan_rfid)
+        add_scan_code = Button(bwd_controller_frame, text='Установить код сканирования RFID', cursor='hand2', command=add_code_for_scan)
         add_scan_code.grid(row=1, column=2, pady=10,padx=10)
 
         def disable_scan_code():
