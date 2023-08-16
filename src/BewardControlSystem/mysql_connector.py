@@ -42,6 +42,7 @@ try:
     CREATE TABLE IF NOT EXISTS address_list(
     id INT AUTO_INCREMENT,
     address TEXT NOT NULL,
+    entrance INT, 
     ip TEXT NOT NULL,
     login TEXT NOT NULL,
     password  TEXT NOT NULL,
@@ -73,7 +74,7 @@ finally:
     conn.close()
 
 
-def add_new_address(address, ip,login, password, owner):
+def add_new_address(address,entrance, ip,login, password, owner):
     try:
         conn = create_con_db(db_config["mysql"]["host"],
                              db_config["mysql"]["user"],
@@ -84,7 +85,7 @@ def add_new_address(address, ip,login, password, owner):
         INSERT INTO 
         address_list (address,ip,login, password, owner)
          VALUES
-         ('{address}','{ip}','{login}','{password}','{owner}');
+         ('{address}','{entrance}','{ip}','{login}','{password}','{owner}');
          '''
         cursor.execute(add_new_entry)
         conn.commit()
@@ -169,7 +170,7 @@ def delete_select_vpn(id):
         cursor.close()
         conn.close()
 
-def edt_address(id,address,ip,login, password, owner):
+def edt_address(id,address,entrance,ip,login, password, owner):
     try:
         conn = create_con_db(db_config["mysql"]["host"],
                              db_config["mysql"]["user"],
@@ -177,7 +178,7 @@ def edt_address(id,address,ip,login, password, owner):
                              "1st_db")
         cursor = conn.cursor()
         edit = f'''
-        UPDATE address_list SET address = '{address}', ip='{ip}',login='{login}', password='{password}', owner='{owner}'
+        UPDATE address_list SET address = '{address}','{entrance}', ip='{ip}',login='{login}', password='{password}', owner='{owner}'
         WHERE id={id}
         '''
         cursor.execute(edit)

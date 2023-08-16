@@ -16,6 +16,7 @@ import requests
 from functions import update_combobox_company_values, disable_vpn
 import re
 from tkinter import filedialog as fd
+import pandas as pd
 
 class MainWindow(tk.Tk):
     def __init__(self,*args, **kwargs):
@@ -171,6 +172,13 @@ class MainWindow(tk.Tk):
         entris.append(self.password_bwd_entry)
         self.password = self.password_bwd_entry.get()
 
+        self.entrance_label = Label(self.data_frame, text='Подъезд')
+        self.entrance_label.grid(row=0, column=4, padx=10,pady=10)
+        self.entrance_entry = Entry(self.data_frame)
+        self.entrance_entry.grid(row=0, column=5, pady=10, padx=10)
+        entris.append(self.entrance_entry)
+        self.entrance = self.entrance_entry.get()
+
         # there was
         # Update company combobox
         #         def update_combobox_company_values():
@@ -182,16 +190,16 @@ class MainWindow(tk.Tk):
         lists_for_combobox = update_combobox_company_values()
 
         self.owner_label = Label(self.data_frame, text="Обслуживающая организация")
-        self.owner_label.grid(row=0, column=4, padx=10, pady=10)
+        self.owner_label.grid(row=1, column=4, padx=10, pady=10)
         self.owner_entry = ttk.Combobox(self.data_frame, values=lists_for_combobox, state="readonly")
-        self.owner_entry.grid(row=0, column=5, padx=10, pady=10)
+        self.owner_entry.grid(row=1, column=5, padx=10, pady=10)
         entris.append(self.owner_entry)
         self.owner = self.owner_entry.get()
 
         #####################
 
         plus_btn = Button(self.data_frame, text='Добавить обслуживающую\nорганизацию', cursor='hand2', command=ChildAddCompany)
-        plus_btn.grid(row=0, column=6, padx=10,pady=10)
+        plus_btn.grid(row=1, column=6, padx=10,pady=10)
 ########################################################################
 
         # Add Buttons for control sql
@@ -199,7 +207,7 @@ class MainWindow(tk.Tk):
         button_frame.pack(fill=X, padx=20)
 
         def add_bwd():
-            add_new_address(self.address, self.ip, self.login, self.password, self.owner)
+            add_new_address(self.address,self.entrance, self.ip, self.login, self.password, self.owner)
             clear_entris()
             view_table()
         add_button = Button(button_frame, text="Добавить",cursor = 'hand2', command=add_bwd)
@@ -207,7 +215,7 @@ class MainWindow(tk.Tk):
 
         # Edit button
         def edit_address():
-            edt_address(self.id, self.address,self.ip,self.login,self.password,self.owner)
+            edt_address(self.id, self.address,self.entrance,self.ip,self.login,self.password,self.owner)
             view_table()
 
 
@@ -231,8 +239,32 @@ class MainWindow(tk.Tk):
         remove_all_button.grid(row=0, column=3, padx=10, pady=10)
 
         def callback():
-            name = fd.askopenfilename()
-            print(name)
+            xlsx = fd.askopenfilename()
+            df_address_list = pd.read_excel(f'''{xlsx}''')
+            base_list=[]
+            id_bwd = df_address_list['ID'].tolist()
+            address = df_address_list['Адрес'].tolist()
+            entrace = df_address_list['Подъезд'].tolist()
+            ip = df_address_list['ip'].tolist()
+            login = df_address_list['Логин'].tolist()
+            password = df_address_list['Пароль'].tolist()
+            company = df_address_list['Компания'].tolist()
+            base_list.append(id_bwd)
+            base_list.append(address)
+            base_list.append(entrace)
+            base_list.append(ip)
+            base_list.append(login)
+            base_list.append(password)
+            base_list.append(company)
+            x = 0
+            for i in id_bwd:
+                x += 1
+                if x == id_bwd[-1]:
+                    break
+                for elem in base_list:
+                    print(elem[x])
+
+
 
         add_bwd_from_xlsx = Button(button_frame,text='Импорт из Excel',command=callback)
         add_bwd_from_xlsx.grid(row=0, column=4, padx=10, pady=10)
