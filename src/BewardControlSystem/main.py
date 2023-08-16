@@ -266,6 +266,7 @@ class MainWindow(tk.Tk):
 
 
 
+
         add_bwd_from_xlsx = Button(button_frame,text='Импорт из Excel',command=callback)
         add_bwd_from_xlsx.grid(row=0, column=4, padx=10, pady=10)
 
