@@ -15,6 +15,7 @@ from tkinter.messagebox import askyesno
 import requests
 from functions import update_combobox_company_values, disable_vpn
 import re
+from tkinter import filedialog as fd
 
 class MainWindow(tk.Tk):
     def __init__(self,*args, **kwargs):
@@ -61,6 +62,7 @@ class MainWindow(tk.Tk):
         self.notebook.add(self.bwd_frame, text='Бевард')
         self.notebook.add(self.vpn_frame, text='VPN')
 
+# Filter panel
         def filterTreeView(*args):
             ItemsOnTreeView = self.tree.get_children()
             search = self.search_ent_var.get().capitalize()
@@ -227,6 +229,13 @@ class MainWindow(tk.Tk):
 
         remove_all_button = Button(button_frame, text="Удалить все",cursor = 'hand2', command=remove_all_warning)
         remove_all_button.grid(row=0, column=3, padx=10, pady=10)
+
+        def callback():
+            name = fd.askopenfilename()
+            print(name)
+
+        add_bwd_from_xlsx = Button(button_frame,text='Импорт из Excel',command=callback)
+        add_bwd_from_xlsx.grid(row=0, column=4, padx=10, pady=10)
 
 
 
