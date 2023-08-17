@@ -145,21 +145,27 @@ class MainWindow(tk.Tk):
         self.id_entry = Entry(self.data_frame)
         self.id_entry.grid_remove()
         entris.append(self.id_entry)
-        self.id = self.id_entry.get()
+
 
         self.address_label = Label(self.data_frame, text="Адрес")
         self.address_label.grid(row=0, column=0, padx=10, pady=10)
         self.address_entry = Entry(self.data_frame)
         self.address_entry.grid(row=0, column=1, padx=10, pady=10)
         entris.append(self.address_entry)
-        self.address = self.address_entry.get()
+
+
+        self.entrance_label = Label(self.data_frame, text='Подъезд')
+        self.entrance_label.grid(row=0, column=2, padx=10, pady=10)
+        self.entrance_entry = Entry(self.data_frame)
+        self.entrance_entry.grid(row=0, column=3, pady=10, padx=10)
+        entris.append(self.entrance_entry)
+
 
         self.ip_label = Label(self.data_frame, text="IP")
-        self.ip_label.grid(row=0, column=2, padx=10, pady=10)
+        self.ip_label.grid(row=0, column=4, padx=10, pady=10)
         self.ip_entry = Entry(self.data_frame)
-        self.ip_entry.grid(row=0, column=3, padx=10, pady=10)
+        self.ip_entry.grid(row=0, column=5, padx=10, pady=10)
         entris.append(self.ip_entry)
-        self.ip = self.ip_entry.get()
 
 
         self.login_bwd_label = Label(self.data_frame, text='Логин')
@@ -167,7 +173,6 @@ class MainWindow(tk.Tk):
         self.login_bwd_entry = Entry(self.data_frame)
         self.login_bwd_entry.grid(row=1, column=1, padx=10, pady=10)
         entris.append(self.login_bwd_entry)
-        self.login = self.login_bwd_entry.get()
 
 
         self.password_bwd_label = Label(self.data_frame, text='Пароль')
@@ -175,14 +180,8 @@ class MainWindow(tk.Tk):
         self.password_bwd_entry = Entry(self.data_frame, show='*')
         self.password_bwd_entry.grid(row=1, column=3, padx=10, pady=10)
         entris.append(self.password_bwd_entry)
-        self.password = self.password_bwd_entry.get()
 
-        self.entrance_label = Label(self.data_frame, text='Подъезд')
-        self.entrance_label.grid(row=0, column=4, padx=10,pady=10)
-        self.entrance_entry = Entry(self.data_frame)
-        self.entrance_entry.grid(row=0, column=5, pady=10, padx=10)
-        entris.append(self.entrance_entry)
-        self.entrance = self.entrance_entry.get()
+
 
         # there was
         # Update company combobox
@@ -199,7 +198,6 @@ class MainWindow(tk.Tk):
         self.owner_entry = ttk.Combobox(self.data_frame, values=lists_for_combobox, state="readonly")
         self.owner_entry.grid(row=1, column=5, padx=10, pady=10)
         entris.append(self.owner_entry)
-        self.owner = self.owner_entry.get()
 
         #####################
 
@@ -253,7 +251,7 @@ class MainWindow(tk.Tk):
             ip_xlsx = df_address_list['ip'].tolist()
             login_xlsx = df_address_list['Логин'].tolist()
             password_xlsx = df_address_list['Пароль'].tolist()
-            company_xlsx = df_address_list['Компания'].tolist()
+            company_xlsx = df_address_list['Обслуживающая организация'].tolist()
             base_list.append(id_xlsx)
             base_list.append(address_xlsx)
             base_list.append(entrance_xlsx)
@@ -347,7 +345,7 @@ class MainWindow(tk.Tk):
 
         def open_door():
             try:
-                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/intercom_cgi?action=maindoor''')
+                r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/intercom_cgi?action=maindoor''')
                 if r.status_code == 200:
                     mbox.showinfo('Успешно', 'Дверь открыта')
                 else:
@@ -363,14 +361,14 @@ class MainWindow(tk.Tk):
         def autocollectkeys():
             try:
                 if enabled.get() == 1:
-                    r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=on''')
+                    r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=on''')
                     print('Автозапись включена')
                     if r.status_code == 200:
                         mbox.showinfo('Успешно','Автозапись включена')
                     else:
                         mbox.showwarning('Ошибка','Ошбика включения автозаписи')
                 elif enabled.get() == 0:
-                    r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=off''')
+                    r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=off''')
                     if r.status_code == 200:
                         mbox.showinfo('Успешно','Автозапись отключена')
                     else:
@@ -386,14 +384,14 @@ class MainWindow(tk.Tk):
 
         add_key_entry = Entry(bwd_controller_frame)
         add_key_entry.grid(row=0, column=3, padx=10, pady=10)
-        key_value = add_key_entry.get()
+        
 
         #mifare_cgi?action=add&Key=806F858A0F6605
 
         def add_key():
             try:
-                mifare = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=add&Key={key_value}''')
-                rfid = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=add&Key={key_value}''')
+                mifare = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=add&Key={add_key_entry.get()}''')
+                rfid = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/rfid_cgi?action=add&Key={add_key_entry.get()}''')
                 if mifare.status_code or rfid.status_code == 200:
                     add_key_entry.delete(0, END)
                     mbox.showinfo('Успешно', 'Ключ добавлен')
@@ -407,11 +405,11 @@ class MainWindow(tk.Tk):
 
         def add_key_to_all_bwd():
             try:
-                ip_list = select_all_bwd_by_logpas(self.login, self.password)
+                ip_list = select_all_bwd_by_logpas(self.login_bwd_entry.get(), self.password_bwd_entry.get())
                 i=0
                 for ip in ip_list:
-                    add_key_rfid = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/rfid_cgi?action=add&Key={key_value}''')
-                    add_key_mifare = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/mifare_cgi?action=add&Key={key_value}''')
+                    add_key_rfid = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{ip[0]}/cgi-bin/rfid_cgi?action=add&Key={add_key_entry.get()}''')
+                    add_key_mifare = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{ip[0]}/cgi-bin/mifare_cgi?action=add&Key={add_key_entry.get()}''')
                     if add_key_rfid.status_code or add_key_mifare.status_code == 200:
                         i+=1
                 mbox.showinfo('Успешно',f'''Ключ добавлен в {i} панель(и/ей)''')
@@ -425,8 +423,8 @@ class MainWindow(tk.Tk):
         def add_code_for_scan():
             try:
                 code_value = add_key_entry.get()
-                add_code_mf = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&ScanCode={code_value}&ScanCodeActive=on''')
-                add_code_rf = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=set&RegCode={code_value}&ScanCodeActive=on''')
+                add_code_mf = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=set&ScanCode={code_value}&ScanCodeActive=on''')
+                add_code_rf = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/rfid_cgi?action=set&RegCode={code_value}&ScanCodeActive=on''')
                 if add_code_mf.status_code or add_code_rf.status_code == 200:
                     mbox.showinfo('Успешно', 'Код для записи ключей успешно установлен')
                 else:
@@ -439,7 +437,7 @@ class MainWindow(tk.Tk):
 
         def disable_scan_code():
             try:
-                disable_code = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&ScanCodeActive=off''')
+                disable_code = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=set&ScanCodeActive=off''')
                 if disable_code.status_code == 200:
                     mbox.showinfo('Успешно', 'Код отключен')
                 else:
@@ -452,8 +450,8 @@ class MainWindow(tk.Tk):
 
         def delete_key():
             try:
-                mifare = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=delete&Key={key_value}''')
-                rfid = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=delete&Key={key_value}''')
+                mifare = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=delete&Key={add_key_entry.get()}''')
+                rfid = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/rfid_cgi?action=delete&Key={add_key_entry.get()}''')
                 if mifare.status_code or rfid.status_code == 200:
                     add_key_entry.delete(0, END)
                     mbox.showinfo('Успешно', 'Ключ удален')
@@ -467,11 +465,11 @@ class MainWindow(tk.Tk):
 
         def delete_key_in_all_bwd():
             try:
-                ip_list = select_all_bwd_by_logpas(self.login, self.password)
+                ip_list = select_all_bwd_by_logpas(self.login_bwd_entry.get(), self.password_bwd_entry.get())
                 i=0
                 for ip in ip_list:
-                    delete_key_rfid = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/rfid_cgi?action=delete&Key={key_value}''')
-                    delete_key_mifare = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/mifare_cgi?action=delete&Key={key_value}''')
+                    delete_key_rfid = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{ip[0]}/cgi-bin/rfid_cgi?action=delete&Key={add_key_entry.get()}''')
+                    delete_key_mifare = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{ip[0]}/cgi-bin/mifare_cgi?action=delete&Key={add_key_entry.get()}''')
                     if delete_key_mifare.status_code or delete_key_rfid.status_code == 200:
                         i+=1
                 mbox.showinfo('Успешно',f'''Ключ удален в {i} панель''')
@@ -487,28 +485,22 @@ class MainWindow(tk.Tk):
 
         def show_all_mifare_keys():
             try:
-                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=list''')
-
-
+                r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=list''')
                 show_keys_window = Tk()
-
                 all_information = r.text
-
                 mf_tree_frame = ttk.Frame(show_keys_window)
                 mf_tree_frame.pack(fill=BOTH, expand=True)
-                tree_scroll = Scrollbar(mf_tree_frame)
-                tree_scroll.pack(side=RIGHT, fill=Y)
-                tree_mf = ttk.Treeview(mf_tree_frame, yscrollcommand=tree_scroll.set,
+                tree_mf = ttk.Treeview(mf_tree_frame,
                                        selectmode="extended",
                                        columns=('ID', 'key_value'),
                                        height=10, show='headings')
-
+                tree_scroll = Scrollbar(mf_tree_frame, command=tree_mf.yview)
+                tree_scroll.pack(side=RIGHT, fill=Y)
+                tree_mf.configure(yscrollcommand=tree_scroll.set)
                 tree_mf.heading('ID', text='ID')
                 tree_mf.heading('key_value', text='Код ключа')
-
                 tree_mf.column('ID', width=50, anchor=CENTER)
                 tree_mf.column('key_value', width=250, anchor=CENTER)
-
                 tree_mf.yview()
                 tree_mf.pack(side=TOP, fill=X)
                 i=1
@@ -538,7 +530,7 @@ class MainWindow(tk.Tk):
 
         def show_all_rfid_keys():
             try:
-                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=list''')
+                r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/rfid_cgi?action=list''')
                 show_rfid_window = Tk()
 
                 all_information = r.text
@@ -554,7 +546,7 @@ class MainWindow(tk.Tk):
                                        height=10, show='headings')
 
                 tree_mf.heading('ID', text='ID')
-                tree_mf.heading('key_value', text='Код ключа')
+                tree_mf.heading('akey_value', text='Код ключа')
 
                 tree_mf.column('ID', width=50, anchor=CENTER)
                 tree_mf.column('key_value', width=250, anchor=CENTER)
