@@ -89,18 +89,22 @@ class MainWindow(tk.Tk):
         self.tree_frame = Frame(self.bwd_frame)
         self.tree_frame.pack(pady=10)
 
+
         # Create a Treeview Scrollbar
 
-        self.tree_scroll = Scrollbar(self.tree_frame)
+        self.tree_scroll = ttk.Scrollbar(self.tree_frame)
         self.tree_scroll.pack(side=RIGHT,fill=Y)
+
+
 
         self.tree = ttk.Treeview(self.tree_frame, yscrollcommand=self.tree_scroll.set,
                             selectmode="extended",
-                            columns=('ID','address','ip','login','password','owner'),
+                            columns=('ID','address','entrance','ip','login','password','owner'),
                             height=10, show='headings')
 
         self.tree.column("ID", width=30 ,anchor=CENTER)
         self.tree.column('address', width=250, anchor=CENTER)
+        self.tree.column('entrance', width=250, anchor=CENTER)
         self.tree.column('ip', width=250, anchor=CENTER)
         self.tree.column('login', width=250, anchor=CENTER)
         self.tree.column('password', width=0, stretch=NO)
@@ -108,6 +112,7 @@ class MainWindow(tk.Tk):
 
         self.tree.heading("ID", text='ID')
         self.tree.heading("address", text="Адрес")
+        self.tree.heading("entrance", text="Подъезд")
         self.tree.heading("ip", text='ip')
         self.tree.heading("login", text='Логин')
         self.tree.heading("password", text='')
@@ -123,6 +128,7 @@ class MainWindow(tk.Tk):
 
         self.tree.yview()
         self.tree.pack(side=TOP, fill=X)
+        #self.tree['yscrollcommand'] = self.tree_scroll.set
 
         # Create Striped Row Tags (doesnt work, idk why)
         self.tree.tag_configure('oddrow', background='yellow')
@@ -242,27 +248,38 @@ class MainWindow(tk.Tk):
             xlsx = fd.askopenfilename()
             df_address_list = pd.read_excel(f'''{xlsx}''')
             base_list=[]
-            id_bwd = df_address_list['ID'].tolist()
-            address = df_address_list['Адрес'].tolist()
-            entrace = df_address_list['Подъезд'].tolist()
-            ip = df_address_list['ip'].tolist()
-            login = df_address_list['Логин'].tolist()
-            password = df_address_list['Пароль'].tolist()
-            company = df_address_list['Компания'].tolist()
-            base_list.append(id_bwd)
-            base_list.append(address)
-            base_list.append(entrace)
-            base_list.append(ip)
-            base_list.append(login)
-            base_list.append(password)
-            base_list.append(company)
+            id_xlsx = df_address_list['ID'].tolist()
+            address_xlsx = df_address_list['Адрес'].tolist()
+            entrance_xlsx = df_address_list['Подъезд'].tolist()
+            ip_xlsx = df_address_list['ip'].tolist()
+            login_xlsx = df_address_list['Логин'].tolist()
+            password_xlsx = df_address_list['Пароль'].tolist()
+            company_xlsx = df_address_list['Компания'].tolist()
+            base_list.append(id_xlsx)
+            base_list.append(address_xlsx)
+            base_list.append(entrance_xlsx)
+            base_list.append(ip_xlsx)
+            base_list.append(login_xlsx)
+            base_list.append(password_xlsx)
+            base_list.append(company_xlsx)
             x = 0
-            for i in id_bwd:
+            for i in id_xlsx:
                 x += 1
-                if x == id_bwd[-1]:
+                value_for_db = []
+                if x == id_xlsx[-1]:
                     break
                 for elem in base_list:
-                    print(elem[x])
+                    value_for_db.append(elem[x])
+                address_xlsx = value_for_db[1]
+                entrance_xlsx = value_for_db[2]
+                ip_xlsx = value_for_db[3]
+                login_xlsx = value_for_db[4]
+                password_xlsx = value_for_db[5]
+                company_xlsx = value_for_db[6]
+                add_new_address(address_xlsx, entrance_xlsx, ip_xlsx, login_xlsx, password_xlsx, company_xlsx)
+
+            view_table()
+
 
 
 

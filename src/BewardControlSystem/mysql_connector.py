@@ -83,7 +83,7 @@ def add_new_address(address,entrance, ip,login, password, owner):
         cursor = conn.cursor()
         add_new_entry=f'''
         INSERT INTO 
-        address_list (address,ip,login, password, owner)
+        address_list (address, entrance,ip,login, password, owner)
          VALUES
          ('{address}','{entrance}','{ip}','{login}','{password}','{owner}');
          '''
