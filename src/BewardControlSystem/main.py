@@ -576,6 +576,26 @@ class MainWindow(tk.Tk):
         show_all_rfid_keys_btn = Button(bwd_controller_frame, text='Показать список\nRFID ключей', cursor='hand2', command=show_all_rfid_keys)
         show_all_rfid_keys_btn.grid(row=1, column=1, padx=10, pady=10)
 
+        #http://admin:m1r0d0m@10.125.14.220/cgi-bin/display_cgi?action=set&TickerText=zxc
+        #http://admin:m1r0d0m@10.125.14.220/cgi-bin/display_cgi?action=set&TickerEnable=
+
+        ticker_label = Label(bwd_controller_frame, text='Бегущая строка')
+        ticker_label.grid(row=2, column=0, padx=10, pady=10)
+
+        ticker_entry = Entry(bwd_controller_frame)
+        ticker_entry.grid(row=2, column=1, padx=10, pady=10)
+
+        def edit_ticker():
+            try:
+                r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/display_cgi?action=set&TickerText={ticker_entry.get()}''')
+                if r.status_code == 200:
+                    mbox.showinfo('Успешно', 'Бегущая строка успешно изменена')
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и включён ли VPN')
+
+        ticker_btn = Button(bwd_controller_frame, text='Изменить', cursor='hand2', command=edit_ticker)
+        ticker_btn.grid(row=2, column=2, padx=10, pady=10)
+
         #--------------------------------------------------------------------------------------------------#
         ####################################################################################################
         # Double click selection---------------------------------------------------------------------------#
