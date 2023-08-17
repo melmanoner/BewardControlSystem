@@ -89,17 +89,11 @@ class MainWindow(tk.Tk):
         self.tree_frame.pack(pady=10)
 
 
-        # Create a Treeview Scrollbar
-
-        self.tree_scroll = ttk.Scrollbar(self.tree_frame)
-        self.tree_scroll.pack(side=RIGHT,fill=Y)
-
-
-
-        self.tree = ttk.Treeview(self.tree_frame, yscrollcommand=self.tree_scroll.set,
+        self.tree = ttk.Treeview(self.tree_frame,
                             selectmode="extended",
                             columns=('ID','address','entrance','ip','login','password','owner'),
                             height=10, show='headings')
+
 
         self.tree.column("ID", width=30 ,anchor=CENTER)
         self.tree.column('address', width=250, anchor=CENTER)
@@ -125,9 +119,15 @@ class MainWindow(tk.Tk):
         # Call view_table func
         view_table()
 
+
+
         self.tree.yview()
-        self.tree.pack(side=TOP, fill=X)
-        #self.tree['yscrollcommand'] = self.tree_scroll.set
+        self.tree.pack(side=LEFT, fill=X)
+
+        # Create a Treeview Scrollbar
+        self.tree_scroll = ttk.Scrollbar(self.tree_frame, command=self.tree.yview)
+        self.tree_scroll.pack(side=RIGHT, fill=Y)
+        self.tree.configure(yscrollcommand=self.tree_scroll.set)
 
         # Create Striped Row Tags (doesnt work, idk why)
         self.tree.tag_configure('oddrow', background='yellow')
