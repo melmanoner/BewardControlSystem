@@ -69,10 +69,9 @@ class MainWindow(tk.Tk):
             search = self.search_ent_var.get().capitalize()
             for eachItem in ItemsOnTreeView:
                 if search in self.tree.item(eachItem)['values'][1]:
-                    self.search_ent_var = self.tree.item(eachItem)['values']
+                    search_var = self.tree.item(eachItem)['values']
                     self.tree.delete(eachItem)
-
-                    self.tree.insert("", 0, values=self.search_ent_var)
+                    self.tree.insert("", 0, values=search_var)
 
         self.search_ent_var = StringVar()
         self.search_entry = Entry(self.bwd_frame, width=150, textvariable=self.search_ent_var)
