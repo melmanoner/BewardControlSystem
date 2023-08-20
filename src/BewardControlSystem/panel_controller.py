@@ -26,8 +26,8 @@ class BwdController(tk.Tk):
         self.destroy()
 
     def bwd_controller_child(self):
-        back_btn = Button(self, text='<- назад', relief='flat', bg='#FFFFF0')
-        back_btn.pack(side=LEFT)
+        #back_btn = Button(self, text='<- назад', relief='flat', bg='#FFFFF0')
+        #back_btn.pack(side=LEFT)
         bwd_notebook = ttk.Notebook(self)
         bwd_notebook.pack(expand=True, fill=BOTH)
 

@@ -282,6 +282,7 @@ class MainWindow(tk.Tk):
                 login_xlsx = value_for_db[4]
                 password_xlsx = value_for_db[5]
                 company_xlsx = value_for_db[6]
+
                 add_new_address(address_xlsx, entrance_xlsx, ip_xlsx, login_xlsx, password_xlsx, company_xlsx)
 
             view_table()
