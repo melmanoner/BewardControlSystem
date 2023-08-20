@@ -3,7 +3,7 @@ import tkinter as tk
 from mysql_connector import add_new_address, \
     values_table,values_vpn_table, delete_select_address, delete_select_vpn,\
     edt_address, add_new_vpn, edit_vpn,select_vpn_name,selection_log_and_pass_by_name,\
-    remove_all_bwd,remove_all_vpn,values_company_table,add_company_to_listbox,delete_company,select_all_bwd_by_logpas
+    remove_all_bwd,remove_all_vpn,values_company_table,add_company_to_listbox,delete_company,select_all_bwd_by_logpas, get_vpn_by_company
 
 from tkinter import *
 from tkinter import ttk
@@ -13,10 +13,11 @@ import os
 from tkinter import messagebox as mbox
 from tkinter.messagebox import askyesno
 import requests
-from functions import update_combobox_company_values, disable_vpn
+from functions import update_combobox_company_values, Vpn, disable_vpn
 import re
 from tkinter import filedialog as fd
 import pandas as pd
+from panel_controller import BwdController
 
 class MainWindow(tk.Tk):
     def __init__(self,*args, **kwargs):
@@ -29,15 +30,15 @@ class MainWindow(tk.Tk):
         #self.main_window = Tk()
         #main_window.geometry("900x600")
 
-        self.style = ThemedStyle(self)
-        self.style.set_theme("arc")
-        self.style.configure("Treeview",
+        style = ThemedStyle(self)
+        style.set_theme("arc")
+        style.configure("Treeview",
                         background='#FFF',
                         foreground='black',
                         rowheight=25,
                         fieldbackground='#FFF')
 
-        self.style.map("Treeview",
+        style.map("Treeview",
                   background=[('selected','#347083')])
 
 
@@ -46,38 +47,38 @@ class MainWindow(tk.Tk):
 
 
 
-        self.notebook = ttk.Notebook(self)
-        self.notebook.pack(expand=True, fill=BOTH)
+        notebook = ttk.Notebook(self)
+        notebook.pack(expand=True, fill=BOTH)
 
 
-        self.bwd_frame = ttk.Frame(self.notebook)
-        self.vpn_frame = ttk.Frame(self.notebook)
-
-
-
-        self.bwd_frame.pack(fill=BOTH, expand=True)
-        self.vpn_frame.pack(fill=BOTH, expand=True)
+        bwd_frame = ttk.Frame(notebook)
+        vpn_frame = ttk.Frame(notebook)
 
 
 
-        self.notebook.add(self.bwd_frame, text='Бевард')
-        self.notebook.add(self.vpn_frame, text='VPN')
+        bwd_frame.pack(fill=BOTH, expand=True)
+        vpn_frame.pack(fill=BOTH, expand=True)
+
+
+
+        notebook.add(bwd_frame, text='Бевард')
+        notebook.add(vpn_frame, text='VPN')
 
 # Filter panel
         def filterTreeView(*args):
-            ItemsOnTreeView = self.tree.get_children()
-            search = self.search_ent_var.get().capitalize()
+            ItemsOnTreeView = tree.get_children()
+            search = search_ent_var.get().capitalize()
             for eachItem in ItemsOnTreeView:
-                if search in self.tree.item(eachItem)['values'][1]:
-                    search_var = self.tree.item(eachItem)['values']
-                    self.tree.delete(eachItem)
-                    self.tree.insert("", 0, values=search_var)
+                if search in tree.item(eachItem)['values'][1]:
+                    search_var = tree.item(eachItem)['values']
+                    tree.delete(eachItem)
+                    tree.insert("", 0, values=search_var)
 
-        self.search_ent_var = StringVar()
-        self.search_entry = Entry(self.bwd_frame, width=150, textvariable=self.search_ent_var)
-        self.search_entry.pack(pady=10)
+        search_ent_var = StringVar()
+        search_entry = Entry(bwd_frame, width=150, textvariable=search_ent_var)
+        search_entry.pack(pady=10)
         #self.search_entry.insert(0,'Поиск')
-        self.search_ent_var.trace('w', filterTreeView)
+        search_ent_var.trace('w', filterTreeView)
 
 
 
@@ -85,101 +86,107 @@ class MainWindow(tk.Tk):
 
         # Create a bwd frame
 
-        self.tree_frame = Frame(self.bwd_frame)
-        self.tree_frame.pack(pady=10)
+        tree_frame = Frame(bwd_frame)
+        tree_frame.pack(pady=10)
 
 
-        self.tree = ttk.Treeview(self.tree_frame,
+        tree = ttk.Treeview(tree_frame,
                             selectmode="extended",
                             columns=('ID','address','entrance','ip','login','password','owner'),
                             height=10, show='headings')
 
 
-        self.tree.column("ID", width=30 ,anchor=CENTER)
-        self.tree.column('address', width=250, anchor=CENTER)
-        self.tree.column('entrance', width=250, anchor=CENTER)
-        self.tree.column('ip', width=250, anchor=CENTER)
-        self.tree.column('login', width=250, anchor=CENTER)
-        self.tree.column('password', width=0, stretch=NO)
-        self.tree.column('owner', width=250, anchor=CENTER)
+        tree.column("ID", width=30 ,anchor=CENTER)
+        tree.column('address', width=250, anchor=CENTER)
+        tree.column('entrance', width=250, anchor=CENTER)
+        tree.column('ip', width=250, anchor=CENTER)
+        tree.column('login', width=250, anchor=CENTER)
+        tree.column('password', width=0, stretch=NO)
+        tree.column('owner', width=250, anchor=CENTER)
 
-        self.tree.heading("ID", text='ID')
-        self.tree.heading("address", text="Адрес")
-        self.tree.heading("entrance", text="Подъезд")
-        self.tree.heading("ip", text='ip')
-        self.tree.heading("login", text='Логин')
-        self.tree.heading("password", text='')
-        self.tree.heading("owner", text='Обслуживающая организация')
+        tree.heading("ID", text='ID')
+        tree.heading("address", text="Адрес")
+        tree.heading("entrance", text="Подъезд")
+        tree.heading("ip", text='ip')
+        tree.heading("login", text='Логин')
+        tree.heading("password", text='')
+        tree.heading("owner", text='Обслуживающая организация')
 
         # Create view for table
         def view_table():
-            [self.tree.delete(i) for i in self.tree.get_children()]
+            [tree.delete(i) for i in tree.get_children()]
             for row in values_table():
-                self.tree.insert('','end',values=row)
+                tree.insert('','end',values=row)
         # Call view_table func
         view_table()
 
 
 
-        self.tree.yview()
-        self.tree.pack(side=LEFT, fill=X)
+        tree.yview()
+        tree.pack(side=LEFT, fill=X)
 
         # Create a Treeview Scrollbar
-        self.tree_scroll = ttk.Scrollbar(self.tree_frame, command=self.tree.yview)
-        self.tree_scroll.pack(side=RIGHT, fill=Y)
-        self.tree.configure(yscrollcommand=self.tree_scroll.set)
+        tree_scroll = ttk.Scrollbar(tree_frame, command=tree.yview)
+        tree_scroll.pack(side=RIGHT, fill=Y)
+        tree.configure(yscrollcommand=tree_scroll.set)
 
         # Create Striped Row Tags (doesnt work, idk why)
-        self.tree.tag_configure('oddrow', background='yellow')
-        self.tree.tag_configure('evenrow', background='blue')
+        tree.tag_configure('oddrow', background='yellow')
+        tree.tag_configure('evenrow', background='blue')
 
         # Add Record Entry Boxes
 
-        self.data_frame = LabelFrame(self.bwd_frame, text="Таблица")
-        self.data_frame.pack(fill="x", padx=20)
+        data_frame = LabelFrame(bwd_frame, text="Таблица")
+        data_frame.pack(fill="x", padx=20)
 
         entris = []
         def clear_entris():
             for entry in entris:
                 entry.delete(0, END)
-        self.id_entry = Entry(self.data_frame)
-        self.id_entry.grid_remove()
-        entris.append(self.id_entry)
+        id_entry = Entry(data_frame)
+        id_entry.grid_remove()
+        entris.append(id_entry)
 
 
-        self.address_label = Label(self.data_frame, text="Адрес")
-        self.address_label.grid(row=0, column=0, padx=10, pady=10)
-        self.address_entry = Entry(self.data_frame)
-        self.address_entry.grid(row=0, column=1, padx=10, pady=10)
-        entris.append(self.address_entry)
+
+        address_label = Label(data_frame, text="Адрес")
+        address_label.grid(row=0, column=0, padx=10, pady=10)
+        address_entry = Entry(data_frame)
+        address_entry.grid(row=0, column=1, padx=10, pady=10)
+        entris.append(address_entry)
 
 
-        self.entrance_label = Label(self.data_frame, text='Подъезд')
-        self.entrance_label.grid(row=0, column=2, padx=10, pady=10)
-        self.entrance_entry = Entry(self.data_frame)
-        self.entrance_entry.grid(row=0, column=3, pady=10, padx=10)
-        entris.append(self.entrance_entry)
+
+        entrance_label = Label(data_frame, text='Подъезд')
+        entrance_label.grid(row=0, column=2, padx=10, pady=10)
+        entrance_entry = Entry(data_frame)
+        entrance_entry.grid(row=0, column=3, pady=10, padx=10)
+        entris.append(entrance_entry)
 
 
-        self.ip_label = Label(self.data_frame, text="IP")
-        self.ip_label.grid(row=0, column=4, padx=10, pady=10)
-        self.ip_entry = Entry(self.data_frame)
-        self.ip_entry.grid(row=0, column=5, padx=10, pady=10)
-        entris.append(self.ip_entry)
+
+        ip_label = Label(data_frame, text="IP")
+        ip_label.grid(row=0, column=4, padx=10, pady=10)
+        ip_entry = Entry(data_frame)
+        ip_entry.grid(row=0, column=5, padx=10, pady=10)
+        entris.append(ip_entry)
 
 
-        self.login_bwd_label = Label(self.data_frame, text='Логин')
-        self.login_bwd_label.grid(row=1, column=0, padx=10, pady=10)
-        self.login_bwd_entry = Entry(self.data_frame)
-        self.login_bwd_entry.grid(row=1, column=1, padx=10, pady=10)
-        entris.append(self.login_bwd_entry)
+
+        login_bwd_label = Label(data_frame, text='Логин')
+        login_bwd_label.grid(row=1, column=0, padx=10, pady=10)
+        login_bwd_entry = Entry(data_frame)
+        login_bwd_entry.grid(row=1, column=1, padx=10, pady=10)
+        entris.append(login_bwd_entry)
 
 
-        self.password_bwd_label = Label(self.data_frame, text='Пароль')
-        self.password_bwd_label.grid(row=1, column=2, padx=10, pady=10)
-        self.password_bwd_entry = Entry(self.data_frame, show='*')
-        self.password_bwd_entry.grid(row=1, column=3, padx=10, pady=10)
-        entris.append(self.password_bwd_entry)
+
+        password_bwd_label = Label(data_frame, text='Пароль')
+        password_bwd_label.grid(row=1, column=2, padx=10, pady=10)
+        password_bwd_entry = Entry(data_frame, show='*')
+        password_bwd_entry.grid(row=1, column=3, padx=10, pady=10)
+        entris.append(password_bwd_entry)
+
 
 
 
@@ -193,42 +200,44 @@ class MainWindow(tk.Tk):
 
         lists_for_combobox = update_combobox_company_values()
 
-        self.owner_label = Label(self.data_frame, text="Обслуживающая организация")
-        self.owner_label.grid(row=1, column=4, padx=10, pady=10)
-        self.owner_entry = ttk.Combobox(self.data_frame, values=lists_for_combobox, state="readonly")
-        self.owner_entry.grid(row=1, column=5, padx=10, pady=10)
-        entris.append(self.owner_entry)
+        owner_label = Label(data_frame, text="Обслуживающая организация")
+        owner_label.grid(row=1, column=4, padx=10, pady=10)
+        owner_entry = ttk.Combobox(data_frame, values=lists_for_combobox)
+        owner_entry.grid(row=1, column=5, padx=10, pady=10)
+        entris.append(owner_entry)
+
 
         #####################
 
-        plus_btn = Button(self.data_frame, text='Добавить обслуживающую\nорганизацию', cursor='hand2', command=ChildAddCompany)
+        plus_btn = Button(data_frame, relief='flat', bg='#FFFFF0', text='Добавить обслуживающую\nорганизацию', cursor='hand2', command=ChildAddCompany)
         plus_btn.grid(row=1, column=6, padx=10,pady=10)
 ########################################################################
 
         # Add Buttons for control sql
-        button_frame = LabelFrame(self.bwd_frame, text="Управление списком адресов")
+        button_frame = LabelFrame(bwd_frame, text="Управление списком адресов")
         button_frame.pack(fill=X, padx=20)
 
         def add_bwd():
-            add_new_address(self.address,self.entrance, self.ip, self.login, self.password, self.owner)
+            add_new_address( address_entry.get(),entrance_entry.get(),ip_entry.get(),login_bwd_entry.get(),password_bwd_entry.get(), owner_entry.get())
             clear_entris()
             view_table()
-        add_button = Button(button_frame, text="Добавить",cursor = 'hand2', command=add_bwd)
+        add_button = Button(button_frame, relief='flat', bg='#FFFFF0', text="Добавить",cursor = 'hand2', command=add_bwd)
         add_button.grid(row=0, column=0, padx=10, pady=10)
 
         # Edit button
         def edit_address():
-            edt_address(self.id, self.address,self.entrance,self.ip,self.login,self.password,self.owner)
+            edt_address(id_entry.get(), address_entry.get(),entrance_entry.get(),ip_entry.get(),login_bwd_entry.get(),password_bwd_entry.get(), owner_entry.get())
             view_table()
 
 
-        edit_button = Button(button_frame, text="Изменить", command=edit_address,cursor = 'hand2')
+
+        edit_button = Button(button_frame, text="Изменить",bg='#FFFFF0', relief='flat', command=edit_address,cursor = 'hand2')
         edit_button.grid(row=0, column=1, padx=10, pady=10)
 
         def remove_command():
-            delete_select_address(self.id)
+            delete_select_address(id_entry.get())
             view_table()
-        remove_button = Button(button_frame, text="Удалить выбранный", command=remove_command,cursor = 'hand2')
+        remove_button = Button(button_frame,bg='#FFFFF0', text="Удалить выбранный",relief='flat', command=remove_command,cursor = 'hand2')
         remove_button.grid(row=0, column=2, padx=10, pady=10)
 
         def remove_all_warning():
@@ -238,10 +247,10 @@ class MainWindow(tk.Tk):
                 view_table()
 
 
-        remove_all_button = Button(button_frame, text="Удалить все",cursor = 'hand2', command=remove_all_warning)
+        remove_all_button = Button(button_frame, text="Удалить все",bg='#FFFFF0', relief='flat',cursor = 'hand2', command=remove_all_warning)
         remove_all_button.grid(row=0, column=3, padx=10, pady=10)
 
-        def callback():
+        def import_from_excel():
             xlsx = fd.askopenfilename()
             df_address_list = pd.read_excel(f'''{xlsx}''')
             base_list=[]
@@ -281,13 +290,13 @@ class MainWindow(tk.Tk):
 
 
 
-        add_bwd_from_xlsx = Button(button_frame,text='Импорт из Excel',command=callback)
+        add_bwd_from_xlsx = Button(button_frame,bg='#FFFFF0',text='Импорт из Excel', relief='flat',cursor='hand2', command=import_from_excel)
         add_bwd_from_xlsx.grid(row=0, column=4, padx=10, pady=10)
 
 
 
         #Add Buttons for control panel
-        button_control_bwd_frame = LabelFrame(self.bwd_frame, text="Управление панелью")
+        button_control_bwd_frame = LabelFrame(bwd_frame, text="Управление панелью")
         button_control_bwd_frame.pack(fill=X, padx=20)
 
         # Create radiobutton for vpn connection------------------------------------------------------------#
@@ -318,12 +327,14 @@ class MainWindow(tk.Tk):
 
 
 
-        bottom_frame = LabelFrame(self.bwd_frame)
+        bottom_frame = LabelFrame(bwd_frame)
         bottom_frame.pack()
 
         # Label for vpn controller
         vpn_controller_frame = LabelFrame(bottom_frame, text="VPN")
         vpn_controller_frame.pack(fill="y", padx=20, side=LEFT)
+
+
         disable_vpn_radiobutton = ttk.Radiobutton(vpn_controller_frame, text='Отключить',variable=state_vpn, value='off', command=disable_vpn)
         disable_vpn_radiobutton.grid(row=0, column=0)
 
@@ -345,7 +356,7 @@ class MainWindow(tk.Tk):
 
         def open_door():
             try:
-                r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/intercom_cgi?action=maindoor''')
+                r = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/intercom_cgi?action=maindoor''')
                 if r.status_code == 200:
                     mbox.showinfo('Успешно', 'Дверь открыта')
                 else:
@@ -361,14 +372,14 @@ class MainWindow(tk.Tk):
         def autocollectkeys():
             try:
                 if enabled.get() == 1:
-                    r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=on''')
+                    r = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=on''')
                     print('Автозапись включена')
                     if r.status_code == 200:
                         mbox.showinfo('Успешно','Автозапись включена')
                     else:
                         mbox.showwarning('Ошибка','Ошбика включения автозаписи')
                 elif enabled.get() == 0:
-                    r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=off''')
+                    r = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=off''')
                     if r.status_code == 200:
                         mbox.showinfo('Успешно','Автозапись отключена')
                     else:
@@ -390,8 +401,8 @@ class MainWindow(tk.Tk):
 
         def add_key():
             try:
-                mifare = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=add&Key={add_key_entry.get()}''')
-                rfid = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/rfid_cgi?action=add&Key={add_key_entry.get()}''')
+                mifare = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/mifare_cgi?action=add&Key={add_key_entry.get()}''')
+                rfid = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/rfid_cgi?action=add&Key={add_key_entry.get()}''')
                 if mifare.status_code or rfid.status_code == 200:
                     add_key_entry.delete(0, END)
                     mbox.showinfo('Успешно', 'Ключ добавлен')
@@ -405,11 +416,11 @@ class MainWindow(tk.Tk):
 
         def add_key_to_all_bwd():
             try:
-                ip_list = select_all_bwd_by_logpas(self.login_bwd_entry.get(), self.password_bwd_entry.get())
+                ip_list = select_all_bwd_by_logpas(login_bwd_entry.get(), password_bwd_entry.get())
                 i=0
                 for ip in ip_list:
-                    add_key_rfid = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{ip[0]}/cgi-bin/rfid_cgi?action=add&Key={add_key_entry.get()}''')
-                    add_key_mifare = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{ip[0]}/cgi-bin/mifare_cgi?action=add&Key={add_key_entry.get()}''')
+                    add_key_rfid = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip[0]}/cgi-bin/rfid_cgi?action=add&Key={add_key_entry.get()}''')
+                    add_key_mifare = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip[0]}/cgi-bin/mifare_cgi?action=add&Key={add_key_entry.get()}''')
                     if add_key_rfid.status_code or add_key_mifare.status_code == 200:
                         i+=1
                 mbox.showinfo('Успешно',f'''Ключ добавлен в {i} панель(и/ей)''')
@@ -423,8 +434,8 @@ class MainWindow(tk.Tk):
         def add_code_for_scan():
             try:
                 code_value = add_key_entry.get()
-                add_code_mf = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=set&ScanCode={code_value}&ScanCodeActive=on''')
-                add_code_rf = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/rfid_cgi?action=set&RegCode={code_value}&ScanCodeActive=on''')
+                add_code_mf = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/mifare_cgi?action=set&ScanCode={code_value}&ScanCodeActive=on''')
+                add_code_rf = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/rfid_cgi?action=set&RegCode={code_value}&ScanCodeActive=on''')
                 if add_code_mf.status_code or add_code_rf.status_code == 200:
                     mbox.showinfo('Успешно', 'Код для записи ключей успешно установлен')
                 else:
@@ -437,7 +448,7 @@ class MainWindow(tk.Tk):
 
         def disable_scan_code():
             try:
-                disable_code = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=set&ScanCodeActive=off''')
+                disable_code = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/mifare_cgi?action=set&ScanCodeActive=off''')
                 if disable_code.status_code == 200:
                     mbox.showinfo('Успешно', 'Код отключен')
                 else:
@@ -450,8 +461,8 @@ class MainWindow(tk.Tk):
 
         def delete_key():
             try:
-                mifare = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=delete&Key={add_key_entry.get()}''')
-                rfid = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/rfid_cgi?action=delete&Key={add_key_entry.get()}''')
+                mifare = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/mifare_cgi?action=delete&Key={add_key_entry.get()}''')
+                rfid = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/rfid_cgi?action=delete&Key={add_key_entry.get()}''')
                 if mifare.status_code or rfid.status_code == 200:
                     add_key_entry.delete(0, END)
                     mbox.showinfo('Успешно', 'Ключ удален')
@@ -465,11 +476,11 @@ class MainWindow(tk.Tk):
 
         def delete_key_in_all_bwd():
             try:
-                ip_list = select_all_bwd_by_logpas(self.login_bwd_entry.get(), self.password_bwd_entry.get())
+                ip_list = select_all_bwd_by_logpas(login_bwd_entry.get(), password_bwd_entry.get())
                 i=0
                 for ip in ip_list:
-                    delete_key_rfid = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{ip[0]}/cgi-bin/rfid_cgi?action=delete&Key={add_key_entry.get()}''')
-                    delete_key_mifare = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{ip[0]}/cgi-bin/mifare_cgi?action=delete&Key={add_key_entry.get()}''')
+                    delete_key_rfid = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip[0]}/cgi-bin/rfid_cgi?action=delete&Key={add_key_entry.get()}''')
+                    delete_key_mifare = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip[0]}/cgi-bin/mifare_cgi?action=delete&Key={add_key_entry.get()}''')
                     if delete_key_mifare.status_code or delete_key_rfid.status_code == 200:
                         i+=1
                 mbox.showinfo('Успешно',f'''Ключ удален в {i} панель''')
@@ -485,7 +496,7 @@ class MainWindow(tk.Tk):
 
         def show_all_mifare_keys():
             try:
-                r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/mifare_cgi?action=list''')
+                r = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/mifare_cgi?action=list''')
                 show_keys_window = Tk()
                 all_information = r.text
                 mf_tree_frame = ttk.Frame(show_keys_window)
@@ -530,7 +541,7 @@ class MainWindow(tk.Tk):
 
         def show_all_rfid_keys():
             try:
-                r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/rfid_cgi?action=list''')
+                r = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/rfid_cgi?action=list''')
                 show_rfid_window = Tk()
 
                 all_information = r.text
@@ -586,7 +597,7 @@ class MainWindow(tk.Tk):
 
         def edit_ticker():
             try:
-                r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/display_cgi?action=set&TickerText={ticker_entry.get()}''')
+                r = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/display_cgi?action=set&TickerText={ticker_entry.get()}''')
                 if r.status_code == 200:
                     mbox.showinfo('Успешно', 'Бегущая строка успешно изменена')
             except Exception:
@@ -597,7 +608,7 @@ class MainWindow(tk.Tk):
 
         def enable_ticker():
             try:
-                r = requests.get(f'''http://{self.login_bwd_entry.get()}:{self.password_bwd_entry.get()}@{self.ip_entry.get()}/cgi-bin/display_cgi?action=set&TickerEnable=on''')
+                r = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip_entry.get()}/cgi-bin/display_cgi?action=set&TickerEnable=on''')
                 if r.status_code == 200:
                     mbox.showinfo('Успешно', 'Бегущая строка включена')
             except Exception:
@@ -605,29 +616,39 @@ class MainWindow(tk.Tk):
 
         ticker_checkbutton = Button(bwd_controller_frame, text='Вкл бегущую строку', command=enable_ticker)
         ticker_checkbutton.grid(row=2, column=3, padx=10, pady=10)
+
+
         #--------------------------------------------------------------------------------------------------#
         ####################################################################################################
-        # Double click selection---------------------------------------------------------------------------#
+        # Click selection---------------------------------------------------------------------------#
         def select_record(event):
             # Clear entry boxes
             clear_entris()
             # Grab record Number
-            selected = self.tree.focus()
+            selected = tree.focus()
             # Grab record values
-            values = self.tree.item(selected, 'values')
+            values = tree.item(selected, 'values')
             # outpts to entry boxes
             i=0
             for entry in entris:
                 entry.insert(0, values[i])
-                i=i+1
+                i = i + 1
 
-        self.tree.bind('<Double-Button-1>', select_record)
+        tree.bind('<Button-1>', select_record)
+
+        def select_bwd(event):
+            Vpn(ip_entry.get(), login_bwd_entry.get(), password_bwd_entry.get(),
+                get_vpn_by_company(owner_entry.get()))
+            BwdController(login_bwd_entry.get(),password_bwd_entry.get(),ip_entry.get(), owner_entry.get())
+
+
+        tree.bind('<Double-Button-1>',  select_bwd)
         #--------------------------------------------------------------------------------------------------#
 
 
         # Create frame for vpn
 
-        vpn_list_frame = Frame(self.vpn_frame)
+        vpn_list_frame = Frame(vpn_frame)
         vpn_list_frame.pack(pady=10)
         tree_vpn_scroll = Scrollbar(vpn_list_frame)
         tree_vpn_scroll.pack(side=RIGHT, fill=Y)
@@ -650,68 +671,68 @@ class MainWindow(tk.Tk):
             for row in values_vpn_table():
                 tree_vpn.insert('','end', values=row)
         view_vpn_table()
-        self.vpn_label_frame = LabelFrame(self.vpn_frame, text='VPN')
-        self.vpn_label_frame.pack(fill="x", padx=20)
+        vpn_label_frame = LabelFrame(vpn_frame, text='VPN')
+        vpn_label_frame.pack(fill="x", padx=20)
         entris_vpn = []
-        self.id_vpn_entry = Entry(self.vpn_label_frame)
-        self.id_vpn_entry.grid_remove()
-        entris_vpn.append(self.id_vpn_entry)
-        self.id_vpn = self.id_vpn_entry.get()
+        id_vpn_entry = Entry(vpn_label_frame)
+        id_vpn_entry.grid_remove()
+        entris_vpn.append(id_vpn_entry)
+        id_vpn = id_vpn_entry.get()
 
-        self.owner_vpn_label = Label(self.vpn_label_frame, text="Владелец")
-        self.owner_vpn_label.grid(row=0, column=0, padx=10, pady=10)
-        self.owner_vpn_entry = ttk.Combobox(self.vpn_label_frame, values=lists_for_combobox,state="readonly")
-        self.owner_vpn_entry.grid(row=0, column=1, padx=10, pady=10)
-        entris_vpn.append(self.owner_vpn_entry)
-        self.owner_vpn = self.owner_vpn_entry.get()
+        owner_vpn_label = Label(vpn_label_frame, text="Владелец")
+        owner_vpn_label.grid(row=0, column=0, padx=10, pady=10)
+        owner_vpn_entry = ttk.Combobox(vpn_label_frame, values=lists_for_combobox,state="readonly")
+        owner_vpn_entry.grid(row=0, column=1, padx=10, pady=10)
+        entris_vpn.append(owner_vpn_entry)
+        owner_vpn = owner_vpn_entry.get()
 
-        self.name_vpn_label = Label(self.vpn_label_frame, text="Название сети")
-        self.name_vpn_label.grid(row=0, column=2, padx=10, pady=10)
-        self.name_vpn_entry = Entry(self.vpn_label_frame)
-        self.name_vpn_entry.grid(row=0, column=3, padx=10, pady=10)
-        entris_vpn.append(self.name_vpn_entry)
-        self.name_vpn = self.name_vpn_entry.get()
+        name_vpn_label = Label(vpn_label_frame, text="Название сети")
+        name_vpn_label.grid(row=0, column=2, padx=10, pady=10)
+        name_vpn_entry = Entry(vpn_label_frame)
+        name_vpn_entry.grid(row=0, column=3, padx=10, pady=10)
+        entris_vpn.append(name_vpn_entry)
+        name_vpn = name_vpn_entry.get()
 
-        self.login_vpn_label = Label(self.vpn_label_frame, text="Логин")
-        self.login_vpn_label.grid(row=0, column=4, padx=10, pady=10)
-        self.login_vpn_entry = Entry(self.vpn_label_frame)
-        self.login_vpn_entry.grid(row=0, column=5, padx=10, pady=10)
-        entris_vpn.append(self.login_vpn_entry)
-        self.login_vpn = self.login_vpn_entry.get()
+        login_vpn_label = Label(vpn_label_frame, text="Логин")
+        login_vpn_label.grid(row=0, column=4, padx=10, pady=10)
+        login_vpn_entry = Entry(vpn_label_frame)
+        login_vpn_entry.grid(row=0, column=5, padx=10, pady=10)
+        entris_vpn.append(login_vpn_entry)
+        login_vpn = login_vpn_entry.get()
 
-        self.password_vpn_label = Label(self.vpn_label_frame, text="Пароль")
-        self.password_vpn_label.grid(row=0, column=6, padx=10, pady=10)
-        self.password_vpn_entry = Entry(self.vpn_label_frame, show='*')
-        self.password_vpn_entry.grid(row=0, column=7, padx=10, pady=10)
-        entris_vpn.append(self.password_vpn_entry)
-        self.password_vpn = self.password_vpn_entry.get()
+        password_vpn_label = Label(vpn_label_frame, text="Пароль")
+        password_vpn_label.grid(row=0, column=6, padx=10, pady=10)
+        password_vpn_entry = Entry(vpn_label_frame, show='*')
+        password_vpn_entry.grid(row=0, column=7, padx=10, pady=10)
+        entris_vpn.append(password_vpn_entry)
+        password_vpn = password_vpn_entry.get()
 
-        self.control_vpn_frame = LabelFrame(self.vpn_frame, text='Управление списком VPN')
-        self.control_vpn_frame.pack(fill=X, padx=20)
+        control_vpn_frame = LabelFrame(vpn_frame, text='Управление списком VPN')
+        control_vpn_frame.pack(fill=X, padx=20)
         # Create add vpn func
         def add_vpn():
-            add_new_vpn(self.owner_vpn, self.name_vpn, self.login_vpn, self.password_vpn)
+            add_new_vpn(owner_vpn, name_vpn, login_vpn, password_vpn)
             for entry in entris_vpn:
                 entry.delete(0, 'end')
             view_vpn_table()
             show_vpn()
         # Add button
-        add_vpn_button = Button(self.control_vpn_frame, text="Добавить", cursor='hand2', command=add_vpn)
+        add_vpn_button = Button(control_vpn_frame, text="Добавить", cursor='hand2', command=add_vpn)
         add_vpn_button.grid(row=0, column=0, padx=10, pady=10)
         # Button for edit vpn
         def edit_select_vpn():
-            edit_vpn(self.id_vpn, self.owner_entry, self.name_vpn, self.login_vpn, self.password_vpn)
+            edit_vpn(id_vpn, owner_entry, name_vpn, login_vpn, password_vpn)
             view_vpn_table()
             show_vpn()
-        edit_vpn_button = Button(self.control_vpn_frame, text='Изменить', command=edit_select_vpn)
+        edit_vpn_button = Button(control_vpn_frame, text='Изменить', command=edit_select_vpn)
         edit_vpn_button.grid(row=0, column=1, padx=10, pady=10)
         # Button for delete vpn
         def delete_sel_vpn():
-            delete_select_vpn(self.id_vpn)
+            delete_select_vpn(id_vpn)
             view_vpn_table()
             show_vpn()
-        self.delete_vpn_button = Button(self.control_vpn_frame, text="Удалить", cursor='hand2', command=delete_sel_vpn)
-        self.delete_vpn_button.grid(row=0, column=2, padx=10, pady=10)
+        delete_vpn_button = Button(control_vpn_frame, text="Удалить", cursor='hand2', command=delete_sel_vpn)
+        delete_vpn_button.grid(row=0, column=2, padx=10, pady=10)
 
         def delete_all_vpn():
             result = askyesno(title='Подтверждение операции', message='Вы действительно хотите удалить ВСЕ записи в списке VPN?')
@@ -719,8 +740,8 @@ class MainWindow(tk.Tk):
                 remove_all_vpn()
                 view_vpn_table()
                 show_vpn()
-        self.delete_all_vpn_btn = Button(self.control_vpn_frame, text='Удалить все VPN', cursor='hand2', command=delete_all_vpn)
-        self.delete_all_vpn_btn.grid(row=0, column=3, padx=10, pady=10)
+        delete_all_vpn_btn = Button(control_vpn_frame, text='Удалить все VPN', cursor='hand2', command=delete_all_vpn)
+        delete_all_vpn_btn.grid(row=0, column=3, padx=10, pady=10)
         # Select Record
         def select_record(event):
             # Clear entry boxes
@@ -740,6 +761,13 @@ class MainWindow(tk.Tk):
 
         tree_vpn.yview()
         tree_vpn.pack(side=TOP, fill=X)
+
+
+
+
+
+
+
 
 class ChildAddCompany(tk.Tk):
     def __init__(self, *args, **kwargs):

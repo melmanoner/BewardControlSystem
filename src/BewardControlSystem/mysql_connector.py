@@ -178,13 +178,14 @@ def edt_address(id,address,entrance,ip,login, password, owner):
                              "1st_db")
         cursor = conn.cursor()
         edit = f'''
-        UPDATE address_list SET address = '{address}','{entrance}', ip='{ip}',login='{login}', password='{password}', owner='{owner}'
-        WHERE id={id}
+        UPDATE address_list SET address = '{address}',entrance ='{entrance}', ip='{ip}',login='{login}', password='{password}', owner='{owner}'
+        WHERE id='{id}'
         '''
         cursor.execute(edit)
         conn.commit()
+
     except Error as error:
-        print('Ошибка обовления',error)
+        print('Ошибка обновления',error)
     finally:
         cursor.close()
         conn.close()
@@ -374,6 +375,24 @@ def select_all_bwd_by_logpas(login, password):
         return ip
     except Error as error:
         print('Ошибка выборки по логину и паролю', error)
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_vpn_by_company(owner):
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        get_vpn = f'''
+        SELECT name, login, password FROM vpn_list WHERE owner='{owner}' '''
+        cursor.execute(get_vpn)
+        result = cursor.fetchall()
+        return result
+    except Error as error:
+        print('Ошибка выборки логина и пароля по организации, ', error)
     finally:
         cursor.close()
         conn.close()
