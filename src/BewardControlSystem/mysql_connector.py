@@ -47,6 +47,7 @@ try:
     login TEXT NOT NULL,
     password  TEXT NOT NULL,
     owner TEXT NOT NULL,
+    vpn BOOLEAN,
     PRIMARY KEY (id))'''
     cursor.execute(create_address_list)
     create_vpn_list='''
@@ -74,7 +75,7 @@ finally:
     conn.close()
 
 
-def add_new_address(address,entrance, ip,login, password, owner):
+def add_new_address(address,entrance, ip,login, password, owner, vpn):
     try:
         conn = create_con_db(db_config["mysql"]["host"],
                              db_config["mysql"]["user"],
@@ -83,9 +84,9 @@ def add_new_address(address,entrance, ip,login, password, owner):
         cursor = conn.cursor()
         add_new_entry=f'''
         INSERT INTO 
-        address_list (address, entrance,ip,login, password, owner)
+        address_list (address, entrance,ip,login, password, owner, vpn)
          VALUES
-         ('{address}','{entrance}','{ip}','{login}','{password}','{owner}');
+         ('{address}','{entrance}','{ip}','{login}','{password}','{owner}', '{vpn}');
          '''
         cursor.execute(add_new_entry)
         conn.commit()
@@ -170,7 +171,7 @@ def delete_select_vpn(id):
         cursor.close()
         conn.close()
 
-def edt_address(id,address,entrance,ip,login, password, owner):
+def edt_address(id,address,entrance,ip,login, password, owner, vpn):
     try:
         conn = create_con_db(db_config["mysql"]["host"],
                              db_config["mysql"]["user"],
@@ -178,7 +179,7 @@ def edt_address(id,address,entrance,ip,login, password, owner):
                              "1st_db")
         cursor = conn.cursor()
         edit = f'''
-        UPDATE address_list SET address = '{address}',entrance ='{entrance}', ip='{ip}',login='{login}', password='{password}', owner='{owner}'
+        UPDATE address_list SET address = '{address}',entrance ='{entrance}', ip='{ip}',login='{login}', password='{password}', owner='{owner}', vpn='{vpn}'
         WHERE id='{id}'
         '''
         cursor.execute(edit)
@@ -393,6 +394,43 @@ def get_vpn_by_company(owner):
         return result
     except Error as error:
         print('Ошибка выборки логина и пароля по организации, ', error)
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_vpn_by_company(owner):
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        get_vpn = f'''
+        SELECT name, login, password FROM vpn_list WHERE owner='{owner}' '''
+        cursor.execute(get_vpn)
+        result = cursor.fetchall()
+        return result
+    except Error as error:
+        print('Ошибка выборки логина и пароля по организации, ', error)
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_vpn_from_address_list(id_bwd):
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        get_vpn = f'''
+        SELECT vpn FROM vpn_list WHERE id='{id_bwd}' '''
+        cursor.execute(get_vpn)
+        result = cursor.fetchone()
+        return result
+    except Error as error:
+        print('Ошибка get_vpn_from_address_list, ', error)
     finally:
         cursor.close()
         conn.close()

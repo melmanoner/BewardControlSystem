@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from mysql_connector import add_new_address, \
+from mysql_connector import add_new_address, get_vpn_from_address_list, \
     values_table,values_vpn_table, delete_select_address, delete_select_vpn,\
     edt_address, add_new_vpn, edit_vpn,select_vpn_name,selection_log_and_pass_by_name,\
     remove_all_bwd,remove_all_vpn,values_company_table,add_company_to_listbox,delete_company,select_all_bwd_by_logpas, get_vpn_by_company
@@ -92,7 +92,7 @@ class MainWindow(tk.Tk):
 
         tree = ttk.Treeview(tree_frame,
                             selectmode="extended",
-                            columns=('ID','address','entrance','ip','login','password','owner'),
+                            columns=('ID','address','entrance','ip','login','password','owner', 'vpn'),
                             height=10, show='headings')
 
 
@@ -103,6 +103,7 @@ class MainWindow(tk.Tk):
         tree.column('login', width=250, anchor=CENTER)
         tree.column('password', width=0, stretch=NO)
         tree.column('owner', width=250, anchor=CENTER)
+        tree.column('vpn', width=0, stretch=NO)
 
         tree.heading("ID", text='ID')
         tree.heading("address", text="Адрес")
@@ -111,6 +112,7 @@ class MainWindow(tk.Tk):
         tree.heading("login", text='Логин')
         tree.heading("password", text='')
         tree.heading("owner", text='Обслуживающая организация')
+        tree.heading("vpn", text='VPN')
 
         # Create view for table
         def view_table():
@@ -172,6 +174,11 @@ class MainWindow(tk.Tk):
         entris.append(ip_entry)
 
 
+        self.vpn_variable = IntVar()
+        vpn_checkbtn = Checkbutton(data_frame, text='VPN', variable=self.vpn_variable, onvalue=1, offvalue=0)
+        vpn_checkbtn.grid(row=0, column=6, padx=10, pady=10)
+
+
 
         login_bwd_label = Label(data_frame, text='Логин')
         login_bwd_label.grid(row=1, column=0, padx=10, pady=10)
@@ -211,6 +218,16 @@ class MainWindow(tk.Tk):
 
         plus_btn = Button(data_frame, relief='flat', bg='#FFFFF0', text='Добавить обслуживающую\nорганизацию', cursor='hand2', command=ChildAddCompany)
         plus_btn.grid(row=1, column=6, padx=10,pady=10)
+
+        def open_bwd_controller():
+            Vpn(ip_entry.get(), login_bwd_entry.get(), password_bwd_entry.get(), self.vpn_variable.get(),
+                get_vpn_by_company(owner_entry.get()))
+            BwdController(login_bwd_entry.get(),password_bwd_entry.get(),ip_entry.get(), owner_entry.get())
+
+        bwd_open_btn = Button(data_frame, bg='#FFFFF0', text='Открыть', relief='flat', cursor='hand2', command=open_bwd_controller)
+        bwd_open_btn.grid(row=0, column=7, padx=10, pady=10)
+
+
 ########################################################################
 
         # Add Buttons for control sql
@@ -218,7 +235,7 @@ class MainWindow(tk.Tk):
         button_frame.pack(fill=X, padx=20)
 
         def add_bwd():
-            add_new_address( address_entry.get(),entrance_entry.get(),ip_entry.get(),login_bwd_entry.get(),password_bwd_entry.get(), owner_entry.get())
+            add_new_address( address_entry.get(),entrance_entry.get(),ip_entry.get(),login_bwd_entry.get(),password_bwd_entry.get(), owner_entry.get(), self.vpn_variable.get())
             clear_entris()
             view_table()
         add_button = Button(button_frame, relief='flat', bg='#FFFFF0', text="Добавить",cursor = 'hand2', command=add_bwd)
@@ -226,7 +243,7 @@ class MainWindow(tk.Tk):
 
         # Edit button
         def edit_address():
-            edt_address(id_entry.get(), address_entry.get(),entrance_entry.get(),ip_entry.get(),login_bwd_entry.get(),password_bwd_entry.get(), owner_entry.get())
+            edt_address(id_entry.get(), address_entry.get(),entrance_entry.get(),ip_entry.get(),login_bwd_entry.get(),password_bwd_entry.get(), owner_entry.get(), self.vpn_variable.get())
             view_table()
 
 
@@ -261,6 +278,7 @@ class MainWindow(tk.Tk):
             login_xlsx = df_address_list['Логин'].tolist()
             password_xlsx = df_address_list['Пароль'].tolist()
             company_xlsx = df_address_list['Обслуживающая организация'].tolist()
+            vpn_xlsx = df_address_list['VPN'].tolist()
             base_list.append(id_xlsx)
             base_list.append(address_xlsx)
             base_list.append(entrance_xlsx)
@@ -268,6 +286,7 @@ class MainWindow(tk.Tk):
             base_list.append(login_xlsx)
             base_list.append(password_xlsx)
             base_list.append(company_xlsx)
+            base_list.append(vpn_xlsx)
             x = 0
             for i in id_xlsx:
                 x += 1
@@ -282,8 +301,9 @@ class MainWindow(tk.Tk):
                 login_xlsx = value_for_db[4]
                 password_xlsx = value_for_db[5]
                 company_xlsx = value_for_db[6]
+                vpn_xlsx = value_for_db[7]
 
-                add_new_address(address_xlsx, entrance_xlsx, ip_xlsx, login_xlsx, password_xlsx, company_xlsx)
+                add_new_address(address_xlsx, entrance_xlsx, ip_xlsx, login_xlsx, password_xlsx, company_xlsx, vpn_xlsx)
 
             view_table()
 
@@ -296,9 +316,36 @@ class MainWindow(tk.Tk):
 
 
 
+
         #Add Buttons for control panel
         button_control_bwd_frame = LabelFrame(bwd_frame, text="Управление панелью")
         button_control_bwd_frame.pack(fill=X, padx=20)
+
+
+        #--------------------------------------------------------------------------------------------------#
+        ####################################################################################################
+        # Click selection---------------------------------------------------------------------------#
+        def select_record(event):
+            # Clear entry boxes
+            clear_entris()
+            # Grab record Number
+            selected = tree.focus()
+            # Grab record values
+            values = tree.item(selected, 'values')
+            self.vpn_variable.set(values[-1])
+            # outpts to entry boxes
+            i=0
+            for entry in entris:
+                entry.insert(0, values[i])
+                i = i + 1
+        tree.bind('<Double-Button-1>', select_record)
+
+
+
+
+        #tree.bind('<Double-Button-1>',  select_bwd)
+        #--------------------------------------------------------------------------------------------------#
+
 
         # Create radiobutton for vpn connection------------------------------------------------------------#
 
@@ -619,33 +666,6 @@ class MainWindow(tk.Tk):
         ticker_checkbutton.grid(row=2, column=3, padx=10, pady=10)
 
 
-        #--------------------------------------------------------------------------------------------------#
-        ####################################################################################################
-        # Click selection---------------------------------------------------------------------------#
-        def select_record(event):
-            # Clear entry boxes
-            clear_entris()
-            # Grab record Number
-            selected = tree.focus()
-            # Grab record values
-            values = tree.item(selected, 'values')
-            # outpts to entry boxes
-            i=0
-            for entry in entris:
-                entry.insert(0, values[i])
-                i = i + 1
-
-        tree.bind('<Button-1>', select_record)
-
-        def select_bwd(event):
-            Vpn(ip_entry.get(), login_bwd_entry.get(), password_bwd_entry.get(),
-                get_vpn_by_company(owner_entry.get()))
-            BwdController(login_bwd_entry.get(),password_bwd_entry.get(),ip_entry.get(), owner_entry.get())
-
-
-        tree.bind('<Double-Button-1>',  select_bwd)
-        #--------------------------------------------------------------------------------------------------#
-
 
         # Create frame for vpn
 
@@ -752,6 +772,7 @@ class MainWindow(tk.Tk):
             selected = tree_vpn.focus()
             # Grab record values
             values = tree_vpn.item(selected, 'values')
+
             # outpts to entry boxes
             i = 0
             for entry in entris_vpn:
