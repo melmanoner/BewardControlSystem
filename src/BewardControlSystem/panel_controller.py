@@ -7,6 +7,7 @@ from functions import disable_vpn
 import cv2
 from tkinter import messagebox as mbox
 from tkinter.messagebox import askyesno
+from mysql_connector import select_all_bwd_by_logpas
 
 class BwdController(tk.Tk):
     def __init__(self, address,entrance, login, password, ip, company):
@@ -44,6 +45,7 @@ class BwdController(tk.Tk):
         frame_network = ttk.Frame(bwd_notebook)
         frame_sip = ttk.Frame(bwd_notebook)
         frame_sys = ttk.Frame(bwd_notebook)
+        frame_display = ttk.Frame(bwd_notebook)
 
         frame_video_audio.pack(expand=True, fill=BOTH)
         frame_keys.pack(expand=True, fill=BOTH)
@@ -51,14 +53,17 @@ class BwdController(tk.Tk):
         frame_network.pack(expand=True, fill=BOTH)
         frame_sip.pack(expand=True, fill=BOTH)
         frame_sys.pack(expand=True, fill=BOTH)
+        frame_display.pack(expand=True, fill=BOTH)
 
 
         bwd_notebook.add(frame_intercom, text='Домофон')
         bwd_notebook.add(frame_keys, text='Ключи')
+        bwd_notebook.add(frame_display, text='Дисплей')
         bwd_notebook.add(frame_network, text='Сеть')
         bwd_notebook.add(frame_sip, text='SIP')
         bwd_notebook.add(frame_sys, text='Системные')
         bwd_notebook.add(frame_video_audio, text='Видео')
+
 
         def open_door():
             try:
@@ -278,18 +283,247 @@ class BwdController(tk.Tk):
         autorecord = Checkbutton(frame_keys, text='Включить автозапись', cursor='hand2',onvalue=1, offvalue=0, variable=self.keys_autocollect_var,command=autocollectkeys)
         autorecord.grid(row=1, column=0, padx=5, pady=5)
 
+        key_label = Label(frame_keys, text='Ключ/Индекс/Код')
+        key_label.grid(row=0, column=1, padx=5, pady=5)
+
+        key_entry = Entry(frame_keys)
+        key_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        def add_key():
+            try:
+                mifare = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=add&Key={key_entry.get()}''')
+                rfid = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=add&Key={key_entry.get()}''')
+                if mifare.status_code or rfid.status_code == 200:
+                    key_entry.delete(0, END)
+                    response_label = Label(frame_keys, text='Ключ добавлен')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+                else:
+                    response_label = Label(frame_keys, text='Ошибка')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+        key_add_btn = Button(frame_keys, text='Добавить', command=add_key)
+        key_add_btn.grid(row=3, column=1, padx=5, pady=5)
+
+        def add_key_to_all_bwd():
+            try:
+                ip_list = select_all_bwd_by_logpas(self.login, self.password)
+                i=0
+                for ip in ip_list:
+                    add_key_rfid = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/rfid_cgi?action=add&Key={key_entry.get()}''')
+                    add_key_mifare = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/mifare_cgi?action=add&Key={key_entry.get()}''')
+                    if add_key_rfid.status_code or add_key_mifare.status_code == 200:
+                        i+=1
+                response_label = Label(frame_keys, text=f'''Ключ добавлен в {i} панелей''')
+                response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+
+        add_key_to_all_bwd_btn = Button(frame_keys, text='Добавить во все панели', cursor='hand2', command=add_key_to_all_bwd)
+        add_key_to_all_bwd_btn.grid(row=4, column=1, pady=5,padx=5)
+
+        def delete_key():
+            try:
+                mifare = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=delete&Key={key_entry.get()}''')
+                rfid = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=delete&Key={key_entry.get()}''')
+                if mifare.status_code or rfid.status_code == 200:
+                    key_entry.delete(0, END)
+                    response_label = Label(frame_keys, text='Ключ удален')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+                else:
+                    response_label = Label(frame_keys, text='Ошибка')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+        delete_key_button = Button(frame_keys, text='Удалить', cursor='hand2', command=delete_key)
+        delete_key_button.grid(row=5, column=1, padx=5,pady=5)
+
+        def delete_key_in_all_bwd():
+            try:
+                ip_list = select_all_bwd_by_logpas(self.login, self.password)
+                i=0
+                for ip in ip_list:
+                    delete_key_rfid = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/rfid_cgi?action=delete&Key={key_entry.get()}''')
+                    delete_key_mifare = requests.get(f'''http://{self.login}:{self.password}@{ip[0]}/cgi-bin/mifare_cgi?action=delete&Key={key_entry.get()}''')
+                    if delete_key_mifare.status_code or delete_key_rfid.status_code == 200:
+                        i+=1
+                response_label = Label(frame_keys, text=f'''Ключ удален в {i} панелей''')
+                response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+
+        add_key_to_all_bwd_btn = Button(frame_keys, text='Удалить со всех панелей', cursor='hand2', command=delete_key_in_all_bwd)
+        add_key_to_all_bwd_btn.grid(row=6, column=1, pady=5,padx=5)
+
+        def add_code_for_scan():
+            try:
+                code_value = key_entry.get()
+                add_code_mf = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&ScanCode={code_value}&ScanCodeActive=on''')
+                add_code_rf = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=set&RegCode={code_value}&ScanCodeActive=on''')
+                if add_code_mf.status_code or add_code_rf.status_code == 200:
+                    response_label = Label(frame_keys, text='Код сканирования установлен')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+                else:
+                    response_label = Label(frame_keys, text='Ошибка')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+        add_scan_code = Button(frame_keys, text='Установить код сканирования RFID', cursor='hand2', command=add_code_for_scan)
+        add_scan_code.grid(row=1, column=2, pady=10,padx=10)
+
+        def disable_scan_code():
+            try:
+                disable_code = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&ScanCodeActive=off''')
+                if disable_code.status_code == 200:
+                    response_label = Label(frame_keys, text='Код сканирования отключен')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+                else:
+                    response_label = Label(frame_keys, text='Ошибка')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN', cursor='hand2', command=disable_scan_code)
+        scan_code_off_btn = Button(frame_keys, text='Отключить код сканирования', command=disable_scan_code)
+        scan_code_off_btn.grid(row=2, column=2, pady=10, padx=10)
+
+        def show_all_mifare_keys():
+            try:
+                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=list''')
+                show_keys_window = Tk()
+                all_information = r.text
+                mf_tree_frame = ttk.Frame(show_keys_window)
+                mf_tree_frame.pack(fill=BOTH, expand=True)
+                tree_mf = ttk.Treeview(mf_tree_frame,
+                                       selectmode="extended",
+                                       columns=('ID', 'key_value'),
+                                       height=10, show='headings')
+                tree_scroll = Scrollbar(mf_tree_frame, command=tree_mf.yview)
+                tree_scroll.pack(side=RIGHT, fill=Y)
+                tree_mf.configure(yscrollcommand=tree_scroll.set)
+                tree_mf.heading('ID', text='ID')
+                tree_mf.heading('key_value', text='Код ключа')
+                tree_mf.column('ID', width=50, anchor=CENTER)
+                tree_mf.column('key_value', width=250, anchor=CENTER)
+                tree_mf.yview()
+                tree_mf.pack(side=TOP, fill=X)
+                i=1
+                while True:
+                    find_key_word = all_information.find('Key')
+                    if find_key_word == -1:
+                        break
+                    all_information = all_information[find_key_word:]
+                    first_key = all_information.find('=')
+                    if first_key == -1:
+                        break
+                    start = first_key + 1
+                    end = first_key + 15
+                    key = all_information[start:end]
+                    all_information = all_information[end+1:]
+                    i += 1
+                    values_mf = [i, key]
+                    tree_mf.insert('', 'end', values=values_mf)
+            except Exception:
+                response_label = Label(frame_keys, text='Ошибка! Проверьте ключи RFID')
+                response_label.grid(row=0, column=0, pady=5, padx=5)
 
 
 
 
+        show_all_mifare_keys_btn = Button(frame_keys, text='Показать список\nMIFARE ключей', cursor='hand2', command=show_all_mifare_keys)
+        show_all_mifare_keys_btn.grid(row=2, column=0, padx=10, pady=10)
+
+        def show_all_rfid_keys():
+            try:
+                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=list''')
+                show_rfid_window = Tk()
+
+                all_information = r.text
 
 
+                mf_tree_frame = ttk.Frame(show_rfid_window)
+                mf_tree_frame.pack(fill=BOTH, expand=True)
+                tree_scroll = Scrollbar(mf_tree_frame)
+                tree_scroll.pack(side=RIGHT, fill=Y)
+                tree_mf = ttk.Treeview(mf_tree_frame, yscrollcommand=tree_scroll.set,
+                                       selectmode="extended",
+                                       columns=('ID', 'key_value'),
+                                       height=10, show='headings')
 
+                tree_mf.heading('ID', text='ID')
+                tree_mf.heading('akey_value', text='Код ключа')
 
+                tree_mf.column('ID', width=50, anchor=CENTER)
+                tree_mf.column('key_value', width=250, anchor=CENTER)
 
+                tree_mf.yview()
+                tree_mf.pack(side=TOP, fill=X)
+                i = 1
 
+                while True:
+                    find_key_word = all_information.find('KeyValue')
+                    if find_key_word == -1:
+                        break
+                    all_information = all_information[find_key_word:]
+                    first_key = all_information.find('=')
+                    if first_key == -1:
+                        break
+                    start = first_key + 1
+                    end = first_key + 15
+                    key = all_information[start:end]
+                    all_information = all_information[end + 1:]
+                    i += 1
+                    values_mf = [i, key]
+                    tree_mf.insert('', 'end', values=values_mf)
+            except Exception:
+                response_label = Label(frame_keys, text='Ошибка! Проверьте ключи MIFARE')
+                response_label.grid(row=0, column=0, pady=5, padx=5)
 
+        show_all_rfid_keys_btn = Button(frame_keys, text='Показать список\nRFID ключей', cursor='hand2', command=show_all_rfid_keys)
+        show_all_rfid_keys_btn.grid(row=0, column=0, padx=5, pady=5)
 
+# Display Frame
+        ticker_label = Label(frame_display, text='Бегущая строка')
+        ticker_label.grid(row=0, column=1, padx=10, pady=10)
+
+        ticker_entry = Entry(frame_display)
+        ticker_entry.grid(row=1, column=1, padx=10, pady=10)
+
+        def edit_ticker():
+            try:
+                r = requests.get(
+                    f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/display_cgi?action=set&TickerText={ticker_entry.get()}''')
+                if r.status_code == 200:
+                    response_label = Label(frame_display, text='Бегущая строка изменена!')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+                else:
+                    response_label = Label(frame_display, text='Ошибка!')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                response_label = Label(frame_display, text='Ошибка')
+                response_label.grid(row=2, column=1, pady=5, padx=5)
+
+        ticker_btn = Button(frame_display, text='Изменить', cursor='hand2', command=edit_ticker)
+        ticker_btn.grid(row=3, column=1, padx=10, pady=10)
+
+        def enable_ticker():
+            try:
+                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/display_cgi?action=set&TickerEnable=on''')
+                if r.status_code == 200:
+                    response_label = Label(frame_display, text='Бегущая строка включена!')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+                else:
+                    response_label = Label(frame_display, text='Ошибка!')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                response_label = Label(frame_display, text='Ошибка')
+                response_label.grid(row=2, column=1, pady=5, padx=5)
+
+        ticker_checkbutton = Button(frame_display, text='Вкл бегущую строку', command=enable_ticker)
+        ticker_checkbutton.grid(row=1, column=2, padx=5, pady=5)
 
         audio_param_label = Label(frame_video_audio,text='Параметры видео')
         audio_param_label.grid(row=0, column=0)
