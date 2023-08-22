@@ -222,7 +222,7 @@ class MainWindow(tk.Tk):
         def open_bwd_controller():
             Vpn(ip_entry.get(), login_bwd_entry.get(), password_bwd_entry.get(), self.vpn_variable.get(),
                 get_vpn_by_company(owner_entry.get()))
-            BwdController(login_bwd_entry.get(),password_bwd_entry.get(),ip_entry.get(), owner_entry.get())
+            BwdController(address_entry.get(), entrance_entry.get(), login_bwd_entry.get(),password_bwd_entry.get(),ip_entry.get(), owner_entry.get())
 
         bwd_open_btn = Button(data_frame, bg='#FFFFF0', text='Открыть', relief='flat', cursor='hand2', command=open_bwd_controller)
         bwd_open_btn.grid(row=0, column=7, padx=10, pady=10)
