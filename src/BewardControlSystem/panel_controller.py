@@ -8,6 +8,9 @@ import cv2
 from tkinter import messagebox as mbox
 from tkinter.messagebox import askyesno
 from mysql_connector import select_all_bwd_by_logpas
+from tkinter import filedialog as fd
+import pandas as pd
+import csv
 
 class BwdController(tk.Tk):
     def __init__(self, address,entrance, login, password, ip, company):
@@ -483,7 +486,70 @@ class BwdController(tk.Tk):
                 response_label.grid(row=0, column=0, pady=5, padx=5)
 
         show_all_rfid_keys_btn = Button(frame_keys, text='Показать список\nRFID ключей', cursor='hand2', command=show_all_rfid_keys)
-        show_all_rfid_keys_btn.grid(row=0, column=0, padx=5, pady=5)
+        show_all_rfid_keys_btn.grid(row=3, column=0, padx=5, pady=5)
+
+        def export_mf():
+            url = f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=export'''
+            get = requests.get(url)
+            get_content = get.text
+
+
+
+            mf_list = []
+            while get_content != '':
+                mf_list.append(get_content[:35])
+                get_content = get_content[36:]
+            #for key in mf_list:
+            #    print(key)
+            filepath = fd.asksaveasfile(defaultextension='.csv',initialfile="key.csv")
+            #list_of_list = []
+            #list_of_list.append(mf_list)
+            #for key in mf_list:
+            #    # writer.writerows([key])
+            #    print(key)
+
+            with open(filepath.name, 'w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerows(mf_list)
+
+
+
+
+
+            #with csv_file:
+            #    writer = csv.writer(csv_file)
+            #    for elem in mf_list:
+            #        writer.writerow(elem)
+
+            #with csv_file:
+            #    writer = csv.writer(csv_file)
+            #    for row in get.content:
+            #        writer.writerow(row)
+
+
+            #df = pd.read_excel(f'''{filepath}''')
+            #content = pd.DataFrame(mf_list)
+            #content.to_csv(filepath)
+
+            #with open(filepath, "w") as file:
+            #    file.write(get.content)
+
+
+        export_mf_btn = Button(frame_keys, text='Экспорт Mifare', command=export_mf)
+        export_mf_btn.grid(row=4, column=0, padx=5, pady=5)
+
+        def import_mf():
+            mf_file = fd.askopenfilename()
+            url = f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=import'''
+            post = requests.post(url, file=mf_file)
+            if post.status_code == 200:
+                response_label = Label(frame_keys, text='Успешно')
+                response_label.grid(row=0, column=0, pady=5, padx=5)
+            else:
+                response_label = Label(frame_keys, text='Ошибка')
+                response_label.grid(row=0, column=0, pady=5, padx=5)
+        import_mf_btn = Button(frame_keys, text='Импорт Mifare', command=import_mf)
+        import_mf_btn.grid(row=5, column=0, padx=5, pady=5)
 
 # Display Frame
         ticker_label = Label(frame_display, text='Бегущая строка')
@@ -524,6 +590,23 @@ class BwdController(tk.Tk):
 
         ticker_checkbutton = Button(frame_display, text='Вкл бегущую строку', command=enable_ticker)
         ticker_checkbutton.grid(row=1, column=2, padx=5, pady=5)
+
+# Lan frame
+
+        ping_entry = Entry(frame_network)
+        ping_entry.grid(row=1, column=2, padx=5, pady=5)
+
+        def ping():
+            r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/ping_cgi?action=start&host={ping_entry.get()}''')
+            if r.status_code == 200:
+                response = Label(frame_network, text=r.text)
+                response.grid(row=0, column=1, padx=5, pady=5)
+            else:
+                response = Label(frame_network, text='Ошибка')
+                response.grid(row=0, column=1, padx=5, pady=5)
+
+        ping_btn = Button(frame_network, text='Пинг', command=ping)
+        ping_btn.grid(row=2, column=1, padx=5, pady=5)
 
         audio_param_label = Label(frame_video_audio,text='Параметры видео')
         audio_param_label.grid(row=0, column=0)
