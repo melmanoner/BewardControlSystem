@@ -615,6 +615,112 @@ class BwdController(tk.Tk):
         get_param_audio_label = Label(frame_video_audio, text=get_param_audio.text)
         get_param_audio_label.grid(row=1, column=0)
 
+#SIP Frame
+        sip_reg_status = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/sip_cgi?action=regstatus''')
+        sip_label = Label(frame_sip, text=sip_reg_status.text)
+        sip_label.grid(row=0, column=0, pady=5, padx=5)
+
+        def enable_account_sip1():
+            if sip_reg_status.text[:13] == 'AccountEnable0':
+                enable = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/sip_cgi?action=set&AccountEnable1''')
+                if enable.status_code == 200:
+                    mbox.showinfo('SIP1 Включен')
+                else:
+                    mbox.showwarning('Ошибка','Ошибка включения SIP1')
+            else:
+                disable = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/sip_cgi?action=set&AccountEnable0''')
+                if disable.status_code == 200:
+                    mbox.showinfo('SIP1 Отключен')
+                else:
+                    mbox.showwarning('Ошибка','Ошибка включения SIP1')
+
+
+
+        account_enable_checkbox = Button(frame_sip, text='Вкл/Откл SIP 1', command = enable_account_sip1)
+        account_enable_checkbox.grid(row=0, column=1, pady=5, padx=5)
+
+        acc_name1_label = Label(frame_sip, text='Имя:')
+        acc_name1_label.grid(row=1, column=0,pady=5, padx=5)
+
+        acc_name1_entry = Entry(frame_sip)
+        acc_name1_entry.grid(row=1, column=1, pady=5, padx=5)
+
+        acc_number1_label = Label(frame_sip, text='Номер:')
+        acc_number1_label.grid(row=2, column=0, pady=5, padx=5)
+
+        acc_number1_entry = Entry(frame_sip)
+        acc_number1_entry.grid(row=2, column=1, pady=5, padx=5)
+
+        acc_user1_label = Label(frame_sip, text='Имя пользователя:')
+        acc_user1_label.grid(row=3, column=0, pady=5, padx=5)
+
+        acc_user1_entry = Entry(frame_sip)
+        acc_user1_entry.grid(row=3, column=1, pady=5, padx=5)
+
+        acc_pass1_label = Label(frame_sip, text='Пароль:')
+        acc_pass1_label.grid(row=4, column=0, pady=5, padx=5)
+
+        acc_pass1_entry = Entry(frame_sip)
+        acc_pass1_entry.grid(row=4, column=1, pady=5, padx=5)
+
+        acc_port1_label = Label(frame_sip, text='Порт:')
+        acc_port1_label.grid(row=5, column=0, pady=5, padx=5)
+
+        acc_port1_entry = Entry(frame_sip)
+        acc_port1_entry.grid(row=5, column=1, pady=5, padx=5)
+
+        server_enable_label = Label(frame_sip, text='Разрешить регистрацию')
+        server_enable_label.grid(row=6, column=0, pady=5, padx=5)
+        reg_serv_dhcp_label = Label(frame_sip, text='Получать значения сервера регистрации по dhcp')
+        reg_serv_dhcp_label.grid(row=7, column=0, pady=5, padx=5)
+
+        server_enable_checkbox = Checkbutton(frame_sip)
+        server_enable_checkbox.grid(row=6, column=1, pady=5, padx=5)
+        reg_serv_dhcp_checkbox = Checkbutton(frame_sip)
+        reg_serv_dhcp_checkbox.grid(row=7, column=1, pady=5, padx=5)
+
+        serv_url1_label = Label(frame_sip, text='Сервер регестрации:')
+        serv_url1_label.grid(row=8, column=0, pady=5, padx=5)
+
+        serv_url1_entry = Entry(frame_sip)
+        serv_url1_entry.grid(row=8, column=1, pady=5, padx=5)
+
+        serv_port1_label = Label(frame_sip, text='Порт:')
+        serv_port1_label.grid(row=9, column=0, pady=5, padx=5)
+
+        serv_port1_entry = Entry(frame_sip)
+        serv_port1_entry.grid(row=9, column=1, pady=5, padx=5)
+
+        sip_url1_label = Label(frame_sip, text='SIP сервер:')
+        sip_url1_label.grid(row=10, column=0, pady=5, padx=5)
+
+        sip_url1_entry = Entry(frame_sip)
+        sip_url1_entry.grid(row=10, column=1, pady=5, padx=5)
+
+        sip_port1_label = Label(frame_sip, text='Sip Порт:')
+        sip_port1_label.grid(row=11, column=0, pady=5, padx=5)
+
+        sip_port1_entry = Entry(frame_sip)
+        sip_port1_entry.grid(row=11, column=1, pady=5, padx=5)
+
+        proxy_url1_label = Label(frame_sip, text='Proxy сервер:')
+        proxy_url1_label.grid(row=12, column=0, pady=5, padx=5)
+
+        proxy_url1_entry = Entry(frame_sip)
+        proxy_url1_entry.grid(row=12, column=1, pady=5, padx=5)
+
+        proxy_port1_label = Label(frame_sip, text='Proxy Порт:')
+        proxy_port1_label.grid(row=13, column=0, pady=5, padx=5)
+
+        proxy_port1_entry = Entry(frame_sip)
+        proxy_port1_entry.grid(row=13, column=1, pady=5, padx=5)
+
+
+
+
+
+
+
 
 
 
