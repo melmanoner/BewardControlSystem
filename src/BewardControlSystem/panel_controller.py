@@ -15,7 +15,7 @@ import csv
 class BwdController(tk.Tk):
     def __init__(self, address,entrance, login, password, ip, company):
         self.bwd_controller_window = tk.Tk.__init__(self)
-        self.wm_geometry('800x600')
+        self.wm_geometry('1000x600')
         style = ThemedStyle(self)
         style.set_theme("arc")
         self.address = address
@@ -618,7 +618,7 @@ class BwdController(tk.Tk):
 #SIP Frame
         sip_reg_status = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/sip_cgi?action=regstatus''')
         sip_label = Label(frame_sip, text=sip_reg_status.text)
-        sip_label.grid(row=0, column=0, pady=5, padx=5)
+        sip_label.grid(row=15, column=0, pady=5, padx=5)
 
         def enable_account_sip1():
             if sip_reg_status.text[:13] == 'AccountEnable0':
@@ -634,9 +634,10 @@ class BwdController(tk.Tk):
                 else:
                     mbox.showwarning('Ошибка','Ошибка включения SIP1')
 
+        #account_enable_label = Label(frame_sip, text='Вкл/Откл SIP 1')
+        #account_enable_label.grid(row=0, column=0, pady=5, padx=5)
 
-
-        account_enable_checkbox = Button(frame_sip, text='Вкл/Откл SIP 1', command = enable_account_sip1)
+        account_enable_checkbox = Checkbutton(frame_sip, text='Вкл/Откл SIP 1')
         account_enable_checkbox.grid(row=0, column=1, pady=5, padx=5)
 
         acc_name1_label = Label(frame_sip, text='Имя:')
@@ -715,11 +716,115 @@ class BwdController(tk.Tk):
         proxy_port1_entry = Entry(frame_sip)
         proxy_port1_entry.grid(row=13, column=1, pady=5, padx=5)
 
+        enable_sip1_btn = Button(frame_sip, text='Зарегестрировать SIP 1')
+        enable_sip1_btn.grid(row=14, column=1, pady=5, padx=5)
+
+#SIP 2
 
 
+        account2_enable_checkbox = Checkbutton(frame_sip, text='Вкл/Откл SIP 2')
+        account2_enable_checkbox.grid(row=0, column=3, pady=5, padx=5)
+
+        acc_name2_label = Label(frame_sip, text='Имя:')
+        acc_name2_label.grid(row=1, column=2, pady=5, padx=5)
+
+        acc_name2_entry = Entry(frame_sip)
+        acc_name2_entry.grid(row=1, column=3, pady=5, padx=5)
+
+        acc_number2_label = Label(frame_sip, text='Номер:')
+        acc_number2_label.grid(row=2, column=2, pady=5, padx=5)
+
+        acc_number2_entry = Entry(frame_sip)
+        acc_number2_entry.grid(row=2, column=3, pady=5, padx=5)
+
+        acc_user2_label = Label(frame_sip, text='Имя пользователя:')
+        acc_user2_label.grid(row=3, column=2, pady=5, padx=5)
+
+        acc_user2_entry = Entry(frame_sip)
+        acc_user2_entry.grid(row=3, column=3, pady=5, padx=5)
+
+        acc_pass2_label = Label(frame_sip, text='Пароль:')
+        acc_pass2_label.grid(row=4, column=2, pady=5, padx=5)
+
+        acc_pass2_entry = Entry(frame_sip)
+        acc_pass2_entry.grid(row=4, column=3, pady=5, padx=5)
+
+        acc_port2_label = Label(frame_sip, text='Порт:')
+        acc_port2_label.grid(row=5, column=2, pady=5, padx=5)
+
+        acc_port2_entry = Entry(frame_sip)
+        acc_port2_entry.grid(row=5, column=3, pady=5, padx=5)
+
+        server2_enable_label = Label(frame_sip, text='Разрешить регистрацию')
+        server2_enable_label.grid(row=6, column=2, pady=5, padx=5)
+        reg_serv2_dhcp_label = Label(frame_sip, text='Получать значения сервера регистрации по dhcp')
+        reg_serv2_dhcp_label.grid(row=7, column=2, pady=5, padx=5)
+
+        server2_enable_checkbox = Checkbutton(frame_sip)
+        server2_enable_checkbox.grid(row=6, column=3, pady=5, padx=5)
+        reg_serv2_dhcp_checkbox = Checkbutton(frame_sip)
+        reg_serv2_dhcp_checkbox.grid(row=7, column=3, pady=5, padx=5)
+
+        serv_url2_label = Label(frame_sip, text='Сервер регестрации:')
+        serv_url2_label.grid(row=8, column=2, pady=5, padx=5)
+
+        serv_url2_entry = Entry(frame_sip)
+        serv_url2_entry.grid(row=8, column=3, pady=5, padx=5)
+
+        serv_port2_label = Label(frame_sip, text='Порт:')
+        serv_port2_label.grid(row=9, column=2, pady=5, padx=5)
+
+        serv_port2_entry = Entry(frame_sip)
+        serv_port2_entry.grid(row=9, column=3, pady=5, padx=5)
+
+        sip_url2_label = Label(frame_sip, text='SIP сервер:')
+        sip_url2_label.grid(row=10, column=2, pady=5, padx=5)
+
+        sip_url2_entry = Entry(frame_sip)
+        sip_url2_entry.grid(row=10, column=3, pady=5, padx=5)
+
+        sip_port2_label = Label(frame_sip, text='Sip Порт:')
+        sip_port2_label.grid(row=11, column=2, pady=5, padx=5)
+
+        sip_port2_entry = Entry(frame_sip)
+        sip_port2_entry.grid(row=11, column=3, pady=5, padx=5)
+
+        proxy_url2_label = Label(frame_sip, text='Proxy сервер:')
+        proxy_url2_label.grid(row=12, column=2, pady=5, padx=5)
+
+        proxy_url2_entry = Entry(frame_sip)
+        proxy_url2_entry.grid(row=12, column=3, pady=5, padx=5)
+
+        proxy_port2_label = Label(frame_sip, text='Proxy Порт:')
+        proxy_port2_label.grid(row=13, column=2, pady=5, padx=5)
+
+        proxy_port2_entry = Entry(frame_sip)
+        proxy_port2_entry.grid(row=13, column=3, pady=5, padx=5)
+
+        enable_sip2_btn = Button(frame_sip, text='Зарегестрировать SIP 2')
+        enable_sip2_btn.grid(row=14, column=3, pady=5, padx=5)
 
 
+#/cgi-bin/sip_cgi?action=set&AccountEnable1={}&AccName1={}&AccNumber1={}&AccUser1={}&={}&AccPort1={}&ServerEnable1={}&RegServerDhcp1={}&RegServerUrl1={}&RegServerPort1={}&SipServerUrl1={}&SipServerPort1={}&SipServerPort1={}&ProxyServerUrl1={}&ProxyServerPort1={}
 
+
+        def enable_sip1():
+            reg_serv = requests.get(f'''http://{self.login}:{self.password}@{self.ip}
+                /cgi-bin/sip_cgi?action=set&AccountEnable1={account_enable_checkbox}
+                &AccName1={acc_name1_entry.get()}&
+                AccNumber1={acc_number1_entry.get()}&
+                AccUser1={acc_user1_entry.get()}&
+                AccPassword1={acc_pass1_entry.get()}&
+                AccPort1={acc_port1_entry.get()}&
+                ServerEnable1={server_enable_checkbox}&
+                RegServerDhcp1={reg_serv_dhcp_checkbox}&
+                RegServerUrl1={serv_url1_entry.get()}&
+                RegServerPort1={serv_port1_entry.get()}&
+                SipServerUrl1={sip_url1_entry.get()}&
+                SipServerPort1={sip_port1_entry.get()}&
+                ProxyServerUrl1={proxy_url1_entry.get()}&
+                ProxyServerPort1={proxy_port1_entry.get()}
+                    ''')
 
 
 
