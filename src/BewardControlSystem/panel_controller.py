@@ -634,10 +634,46 @@ class BwdController(tk.Tk):
                 else:
                     mbox.showwarning('Ошибка','Ошибка включения SIP1')
 
-        #account_enable_label = Label(frame_sip, text='Вкл/Откл SIP 1')
-        #account_enable_label.grid(row=0, column=0, pady=5, padx=5)
 
-        account_enable_checkbox = Checkbutton(frame_sip, text='Вкл/Откл SIP 1')
+        def enable_sip1():
+            if enable_acc1_var.get() == 1:
+                enable_acc1_value = 'on'
+            else:
+                enable_acc1_value = 'off'
+            if server_enable_var.get() == 1:
+                server_enable_value = 'on'
+            else:
+                server_enable_value = 'off'
+            if reg_serv_dhcp_var == 1:
+                reg_serv_dhcp_value = 'on'
+            else:
+                reg_serv_dhcp_value = 'off'
+            reg_serv = requests.get(f'''http://{self.login}:{self.password}@{self.ip}
+                /cgi-bin/sip_cgi?action=set&AccountEnable1={enable_acc1_value}
+                &AccName1={acc_name1_entry.get()}&
+                AccNumber1={acc_number1_entry.get()}&
+                AccUser1={acc_user1_entry.get()}&
+                AccPassword1={acc_pass1_entry.get()}&
+                AccPort1={acc_port1_entry.get()}&
+                ServerEnable1={server_enable_value}&
+                RegServerDhcp1={reg_serv_dhcp_value}&
+                RegServerUrl1={serv_url1_entry.get()}&
+                RegServerPort1={serv_port1_entry.get()}&
+                SipServerUrl1={sip_url1_entry.get()}&
+                SipServerPort1={sip_port1_entry.get()}&
+                ProxyServerUrl1={proxy_url1_entry.get()}&
+                ProxyServerPort1={proxy_port1_entry.get()}
+                    ''')
+            if reg_serv.status_code == 200:
+                mbox.showinfo('OK', 'ok')
+                sip_label = Label(frame_sip, text=sip_reg_status.text)
+                sip_label.grid(row=15, column=0, pady=5, padx=5)
+            else:
+                mbox.showwarning('Ошибка', 'Ошибка')
+
+        enable_acc1_var = IntVar()
+
+        account_enable_checkbox = Checkbutton(frame_sip, text='Вкл/Откл SIP 1', variable=enable_acc1_var, onvalue=1, offvalue=0)
         account_enable_checkbox.grid(row=0, column=1, pady=5, padx=5)
 
         acc_name1_label = Label(frame_sip, text='Имя:')
@@ -670,14 +706,17 @@ class BwdController(tk.Tk):
         acc_port1_entry = Entry(frame_sip)
         acc_port1_entry.grid(row=5, column=1, pady=5, padx=5)
 
+        server_enable_var = IntVar()
+        reg_serv_dhcp_var = IntVar()
+
         server_enable_label = Label(frame_sip, text='Разрешить регистрацию')
         server_enable_label.grid(row=6, column=0, pady=5, padx=5)
         reg_serv_dhcp_label = Label(frame_sip, text='Получать значения сервера регистрации по dhcp')
         reg_serv_dhcp_label.grid(row=7, column=0, pady=5, padx=5)
 
-        server_enable_checkbox = Checkbutton(frame_sip)
+        server_enable_checkbox = Checkbutton(frame_sip, variable=server_enable_var, onvalue=1, offvalue=0)
         server_enable_checkbox.grid(row=6, column=1, pady=5, padx=5)
-        reg_serv_dhcp_checkbox = Checkbutton(frame_sip)
+        reg_serv_dhcp_checkbox = Checkbutton(frame_sip, variable=reg_serv_dhcp_var, onvalue=1, offvalue=0)
         reg_serv_dhcp_checkbox.grid(row=7, column=1, pady=5, padx=5)
 
         serv_url1_label = Label(frame_sip, text='Сервер регестрации:')
@@ -716,13 +755,50 @@ class BwdController(tk.Tk):
         proxy_port1_entry = Entry(frame_sip)
         proxy_port1_entry.grid(row=13, column=1, pady=5, padx=5)
 
-        enable_sip1_btn = Button(frame_sip, text='Зарегестрировать SIP 1')
+        enable_sip1_btn = Button(frame_sip, text='Зарегестрировать SIP 1', command=enable_sip1)
         enable_sip1_btn.grid(row=14, column=1, pady=5, padx=5)
 
 #SIP 2
 
+        def enable_sip2():
+            if enable_acc2_var.get() == 1:
+                enable_acc2_value = 'on'
+            else:
+                enable_acc2_value = 'off'
+            if server_enable_var.get() == 1:
+                server_enable_value = 'on'
+            else:
+                server_enable_value = 'off'
+            if reg_serv2_dhcp_var == 1:
+                reg_serv2_dhcp_value = 'on'
+            else:
+                reg_serv2_dhcp_value = 'off'
+            reg_serv = requests.get(f'''http://{self.login}:{self.password}@{self.ip}
+                /cgi-bin/sip_cgi?action=set&AccountEnable1={enable_acc2_value}
+                &AccName1={acc_name2_entry.get()}&
+                AccNumber1={acc_number2_entry.get()}&
+                AccUser1={acc_user2_entry.get()}&
+                AccPassword1={acc_pass2_entry.get()}&
+                AccPort1={acc_port2_entry.get()}&
+                ServerEnable1={server_enable_value}&
+                RegServerDhcp1={reg_serv2_dhcp_value}&
+                RegServerUrl1={serv_url2_entry.get()}&
+                RegServerPort1={serv_port2_entry.get()}&
+                SipServerUrl1={sip_url2_entry.get()}&
+                SipServerPort1={sip_port2_entry.get()}&
+                ProxyServerUrl1={proxy_url2_entry.get()}&
+                ProxyServerPort1={proxy_port2_entry.get()}
+                    ''')
+            if reg_serv.status_code == 200:
+                mbox.showinfo('OK', 'ok')
+                sip_label = Label(frame_sip, text=sip_reg_status.text)
+                sip_label.grid(row=15, column=0, pady=5, padx=5)
+            else:
+                mbox.showwarning('Ошибка', 'Ошибка')
 
-        account2_enable_checkbox = Checkbutton(frame_sip, text='Вкл/Откл SIP 2')
+        enable_acc2_var = IntVar()
+
+        account2_enable_checkbox = Checkbutton(frame_sip, text='Вкл/Откл SIP 2', variable=enable_acc2_var, onvalue=1, offvalue=0)
         account2_enable_checkbox.grid(row=0, column=3, pady=5, padx=5)
 
         acc_name2_label = Label(frame_sip, text='Имя:')
@@ -755,14 +831,17 @@ class BwdController(tk.Tk):
         acc_port2_entry = Entry(frame_sip)
         acc_port2_entry.grid(row=5, column=3, pady=5, padx=5)
 
+        server2_enable_var = StringVar()
+        reg_serv2_dhcp_var = StringVar()
+
         server2_enable_label = Label(frame_sip, text='Разрешить регистрацию')
         server2_enable_label.grid(row=6, column=2, pady=5, padx=5)
         reg_serv2_dhcp_label = Label(frame_sip, text='Получать значения сервера регистрации по dhcp')
         reg_serv2_dhcp_label.grid(row=7, column=2, pady=5, padx=5)
 
-        server2_enable_checkbox = Checkbutton(frame_sip)
+        server2_enable_checkbox = Checkbutton(frame_sip, variable=server2_enable_var, onvalue=1, offvalue=0)
         server2_enable_checkbox.grid(row=6, column=3, pady=5, padx=5)
-        reg_serv2_dhcp_checkbox = Checkbutton(frame_sip)
+        reg_serv2_dhcp_checkbox = Checkbutton(frame_sip, variable=reg_serv2_dhcp_var, onvalue=1, offvalue=0)
         reg_serv2_dhcp_checkbox.grid(row=7, column=3, pady=5, padx=5)
 
         serv_url2_label = Label(frame_sip, text='Сервер регестрации:')
@@ -801,30 +880,15 @@ class BwdController(tk.Tk):
         proxy_port2_entry = Entry(frame_sip)
         proxy_port2_entry.grid(row=13, column=3, pady=5, padx=5)
 
-        enable_sip2_btn = Button(frame_sip, text='Зарегестрировать SIP 2')
+
+        enable_sip2_btn = Button(frame_sip, text='Зарегестрировать SIP 2', command=enable_sip2)
         enable_sip2_btn.grid(row=14, column=3, pady=5, padx=5)
 
 
 #/cgi-bin/sip_cgi?action=set&AccountEnable1={}&AccName1={}&AccNumber1={}&AccUser1={}&={}&AccPort1={}&ServerEnable1={}&RegServerDhcp1={}&RegServerUrl1={}&RegServerPort1={}&SipServerUrl1={}&SipServerPort1={}&SipServerPort1={}&ProxyServerUrl1={}&ProxyServerPort1={}
 
 
-        def enable_sip1():
-            reg_serv = requests.get(f'''http://{self.login}:{self.password}@{self.ip}
-                /cgi-bin/sip_cgi?action=set&AccountEnable1={account_enable_checkbox}
-                &AccName1={acc_name1_entry.get()}&
-                AccNumber1={acc_number1_entry.get()}&
-                AccUser1={acc_user1_entry.get()}&
-                AccPassword1={acc_pass1_entry.get()}&
-                AccPort1={acc_port1_entry.get()}&
-                ServerEnable1={server_enable_checkbox}&
-                RegServerDhcp1={reg_serv_dhcp_checkbox}&
-                RegServerUrl1={serv_url1_entry.get()}&
-                RegServerPort1={serv_port1_entry.get()}&
-                SipServerUrl1={sip_url1_entry.get()}&
-                SipServerPort1={sip_port1_entry.get()}&
-                ProxyServerUrl1={proxy_url1_entry.get()}&
-                ProxyServerPort1={proxy_port1_entry.get()}
-                    ''')
+
 
 
 
