@@ -35,6 +35,7 @@ class BwdController(tk.Tk):
         self.destroy()
 
     def bwd_controller_child(self):
+        bwd_url = f'''http://{self.login}:{self.password}@{self.ip}'''
         #back_btn = Button(self, text='<- назад', relief='flat', bg='#FFFFF0')
         #back_btn.pack(side=LEFT)
         bwd_notebook = ttk.Notebook(self)
@@ -71,7 +72,7 @@ class BwdController(tk.Tk):
         def open_door():
             try:
                 r = requests.get(
-                    f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/intercom_cgi?action=maindoor''')
+                    bwd_url+f'''/cgi-bin/intercom_cgi?action=maindoor''')
                 if r.status_code == 200:
                     ok_label = Label(frame_intercom, text='Ок')
                     ok_label.grid(row=0, column=0, padx=5,pady=5)
@@ -86,7 +87,7 @@ class BwdController(tk.Tk):
         def open_alterdoor():
             try:
                 r = requests.get(
-                    f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/intercom_cgi?action=altdoor''')
+                    bwd_url+f'''/cgi-bin/intercom_cgi?action=altdoor''')
                 if r.status_code == 200:
                     ok_label = Label(frame_intercom, text='Ок')
                     ok_label.grid(row=0, column=0, padx=5,pady=5)
@@ -101,12 +102,12 @@ class BwdController(tk.Tk):
 
         def state_serv_code():
             try:
-                get_param = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/intercom_cgi?action=get''')
+                get_param = requests.get(bwd_url+f'''/cgi-bin/intercom_cgi?action=get''')
                 text_param = get_param.text
                 first_half = text_param.find('DoorCodeActive=')
                 second_half = first_half+17
                 if text_param[first_half:second_half] == 'DoorCodeActive=on':
-                    set_state_code = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/intercom_cgi?action=set&DoorCodeActive=off''')
+                    set_state_code = requests.get(bwd_url+f'''/cgi-bin/intercom_cgi?action=set&DoorCodeActive=off''')
                     if set_state_code.status_code == 200:
                         response_label = Label(frame_intercom, text='Ok')
                         response_label.grid(row=0, column=0, padx=5, pady=5)
@@ -114,7 +115,7 @@ class BwdController(tk.Tk):
                         response_label = Label(frame_intercom, text=set_code)
                         response_label.grid(row=0, column=0, padx=5, pady=5)
                 else:
-                    set_state_code = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/intercom_cgi?action=set&DoorCodeActive=on''')
+                    set_state_code = requests.get(bwd_url+f'''/cgi-bin/intercom_cgi?action=set&DoorCodeActive=on''')
                     if set_state_code.status_code == 200:
                         response_label = Label(frame_intercom, text='Ok')
                         response_label.grid(row=0, column=0, padx=5, pady=5)
@@ -131,7 +132,7 @@ class BwdController(tk.Tk):
         settings_param_label = Label(frame_intercom, text='Параметры')
         settings_param_label.grid(row=0, column=1, padx=5, pady=5)
 
-        get_param = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/intercom_cgi?action=get''')
+        get_param = requests.get(bwd_url+f'''/cgi-bin/intercom_cgi?action=get''')
         get_param_label = Label(frame_intercom, text=get_param.text)
         get_param_label.grid(row=1, column=1, padx=5, pady=5, rowspan=6)
 
@@ -154,7 +155,7 @@ class BwdController(tk.Tk):
 
         def get_linelevel():
             apparment = appart_entry.get()
-            get_linelvl = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/intercom_cgi?action=linelevel&Apartment={apparment}''')
+            get_linelvl = requests.get(bwd_url+f'''/cgi-bin/intercom_cgi?action=linelevel&Apartment={apparment}''')
             linelevel_response_label = Label(frame_intercom, text=get_linelvl.text)
             linelevel_response_label.grid(row=4, column=2, padx=5, pady=5)
 
@@ -166,7 +167,7 @@ class BwdController(tk.Tk):
         def get_appart_param():
             try:
                 appart = appart_entry.get()
-                get_param = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/apartment_cgi?action=get&Number={appart}''')
+                get_param = requests.get(bwd_url+f'''/cgi-bin/apartment_cgi?action=get&Number={appart}''')
                 if get_param.status_code == 200:
                     response = Label(frame_intercom, text=get_param.text)
                     response.grid(row=0, column=3, padx=5, pady=5, rowspan=4)
@@ -185,7 +186,7 @@ class BwdController(tk.Tk):
                 appart = appart_entry.get()
                 code = code_entry.get()
                 set_code = requests.get(
-                    f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/apartment_cgi?action=set&Number={appart}&DoorCode={code}''')
+                    bwd_url+f'''/cgi-bin/apartment_cgi?action=set&Number={appart}&DoorCode={code}''')
                 if set_code.status_code == 200:
                     response_label = Label(frame_intercom, text='Ok')
                     response_label.grid(row=4, column=2, padx=5, pady=5)
@@ -201,13 +202,13 @@ class BwdController(tk.Tk):
         def code_state():
             try:
                 appart = appart_entry.get()
-                get_param = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/apartment_cgi?action=get&Number={appart}''')
+                get_param = requests.get(bwd_url+f'''/cgi-bin/apartment_cgi?action=get&Number={appart}''')
                 parametrs = get_param.text
                 first_half = parametrs.find('DoorCodeActive=')
                 second_half = first_half+17
                 check_state_code  = parametrs[first_half:second_half]
                 if check_state_code == 'DoorCodeActive=on':
-                    code_state = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/apartment_cgi?action=set&Number={appart}&DoorCodeActive=off''')
+                    code_state = requests.get(bwd_url+f'''/cgi-bin/apartment_cgi?action=set&Number={appart}&DoorCodeActive=off''')
                     if code_state.status_code == 200:
                         response_label = Label(frame_intercom, text='Ok')
                         response_label.grid(row=4, column=2, padx=5, pady=5)
@@ -215,7 +216,7 @@ class BwdController(tk.Tk):
                         response_label = Label(frame_intercom, text=set_code)
                         response_label.grid(row=4, column=2, padx=5, pady=5)
                 else:
-                    code_state = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/apartment_cgi?action=set&Number={appart}&DoorCodeActive=on''')
+                    code_state = requests.get(bwd_url+f'''/cgi-bin/apartment_cgi?action=set&Number={appart}&DoorCodeActive=on''')
                     if code_state.status_code == 200:
                         response_label = Label(frame_intercom, text='Ok')
                         response_label.grid(row=4, column=2, padx=5, pady=5)
@@ -232,7 +233,7 @@ class BwdController(tk.Tk):
         def set_serv_code():
             try:
                 code = code_entry.get()
-                set_code = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/intercom_cgi?action=set&DoorCode={code}''')
+                set_code = requests.get(bwd_url+f'''/cgi-bin/intercom_cgi?action=set&DoorCode={code}''')
                 if set_code.status_code == 200:
                     response_label = Label(frame_intercom, text='Ok')
                     response_label.grid(row=4, column=2, padx=5, pady=5)
@@ -250,7 +251,7 @@ class BwdController(tk.Tk):
 
         self.keys_autocollect_var = BooleanVar()
 
-        params_for_enable = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=get''').text
+        params_for_enable = requests.get(bwd_url+f'''/cgi-bin/mifare_cgi?action=get''').text
         first_half_params_keys = params_for_enable.find('AutoCollectKeys=')
         second_half_params_keys = first_half_params_keys+18
         keys_autocollect_params = params_for_enable[first_half_params_keys:second_half_params_keys]
@@ -264,7 +265,7 @@ class BwdController(tk.Tk):
             try:
                 if self.keys_autocollect_var== 0:
                     self.keys_autocollect_var = 1
-                    collect_key = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=on''')
+                    collect_key = requests.get(bwd_url+f'''/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=on''')
                     if collect_key.status_code == 200:
                         response_label = Label(frame_keys, text='Автозапись включена')
                         response_label.grid(row=0, column=0, padx=5, pady=5)
@@ -273,7 +274,7 @@ class BwdController(tk.Tk):
                         response_label.grid(row=0, column=0, padx=5, pady=5)
                 elif self.keys_autocollect_var == 1:
                     self.keys_autocollect_var = 0
-                    collect_key = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=off''')
+                    collect_key = requests.get(bwd_url+f'''/cgi-bin/mifare_cgi?action=set&AutoCollectKeys=off''')
                     if collect_key.status_code == 200:
                         response_label = Label(frame_keys, text='Автозапись отключена')
                         response_label.grid(row=0, column=0, padx=5, pady=5)
@@ -292,10 +293,12 @@ class BwdController(tk.Tk):
         key_entry = Entry(frame_keys)
         key_entry.grid(row=1, column=1, padx=5, pady=5)
 
+
+
         def add_key():
             try:
-                mifare = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=add&Key={key_entry.get()}''')
-                rfid = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=add&Key={key_entry.get()}''')
+                mifare = requests.get(bwd_url+f'''/cgi-bin/mifare_cgi?action=add&Key={key_entry.get()}''')
+                rfid = requests.get(bwd_url+f'''/cgi-bin/rfid_cgi?action=add&Key={key_entry.get()}''')
                 if mifare.status_code or rfid.status_code == 200:
                     key_entry.delete(0, END)
                     response_label = Label(frame_keys, text='Ключ добавлен')
@@ -327,10 +330,94 @@ class BwdController(tk.Tk):
         add_key_to_all_bwd_btn = Button(frame_keys, text='Добавить во все панели', cursor='hand2', command=add_key_to_all_bwd)
         add_key_to_all_bwd_btn.grid(row=4, column=1, pady=5,padx=5)
 
+        def add_rfid_reg_key():
+            try:
+                request_add = requests.get(bwd_url + f'''/cgi-bin/rfid_cgi?action=set&RegKeyValue={key_entry.get()}''')
+                if request_add.status_code == 200:
+                    key_entry.delete(0, END)
+                    response_label = Label(frame_keys, text='Ключ регистрации RFID добавлен')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+                else:
+                    response_label = Label(frame_keys, text='Ошибка')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+        add_rfid_reg_key_btn = Button(frame_keys, text='Добавить мастер ключ RFID', cursor='hand2', command=add_rfid_reg_key)
+        add_rfid_reg_key_btn.grid(row=5, column=1, padx=5,pady=5)
+
+        def add_rfid_reg_key_to_all():
+            try:
+                ip_list = select_all_bwd_by_logpas(self.login, self.password)
+                i = 0
+                for ip in ip_list:
+                    request_add = requests.get(bwd_url + f'''/cgi-bin/rfid_cgi?action=set&RegKeyValue={key_entry.get()}''')
+                    if request_add.status_code == 200:
+                        i += 1
+                response_label = Label(frame_keys, text=f'''Ключ добавлен в {i} панелей''')
+                response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+        add_rfid_reg_key_btn_to_all = Button(frame_keys, text='Добавить мастер ключ RFID во все панели', cursor='hand2',
+                                      command=add_rfid_reg_key_to_all)
+        add_rfid_reg_key_btn_to_all.grid(row=6, column=1, padx=5, pady=5)
+
+        def add_mf_reg_key():
+            try:
+                mifare = requests.get(bwd_url + f'''/cgi-bin/mifare_cgi?action=add&Key={key_entry.get()}''')
+                list_mf = requests.get(bwd_url + f'''/cgi-bin/mifare_cgi?action=list''')
+
+                find_keycode = list_mf.text.find(f'''{key_entry.get()}''')
+                find_right_cut = list_mf.text[find_keycode-10:find_keycode]
+                find_key_word_in_cut = find_right_cut.find('Key')
+                find_keycode_in_cut = find_right_cut.find(f'''{key_entry.get()}''')
+
+                find_key_number = find_right_cut[find_key_word_in_cut+3:find_keycode_in_cut]
+                add_mf_reg = requests.get(bwd_url+f'''/cgi-bin/mifare_cgi?action=set&ScanKeysIndexes={find_key_number}''')
+                if add_mf_reg.status_code == 200:
+                    response_label = Label(frame_keys, text='Ключ регистрации MF добавлен')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+                else:
+                    response_label = Label(frame_keys, text='Ошибка')
+                    response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+        add_mf_reg_key_btn = Button(frame_keys, text='Добавить мастер ключи Mifare', cursor='hand2', command=add_mf_reg_key)
+        add_mf_reg_key_btn.grid(row=7, column=1, padx=5, pady=5)
+
+        def add_mf_regkey_to_all():
+            try:
+                ip_list = select_all_bwd_by_logpas(self.login, self.password)
+                i = 0
+                for ip in ip_list:
+                    mifare = requests.get(bwd_url + f'''/cgi-bin/mifare_cgi?action=add&Key={key_entry.get()}''')
+                    list_mf = requests.get(bwd_url + f'''/cgi-bin/mifare_cgi?action=list''')
+                    find_keycode = list_mf.text.find(f'''{key_entry.get()}''')
+                    find_right_cut = list_mf.text[find_keycode - 10:find_keycode]
+                    find_key_word_in_cut = find_right_cut.find('Key')
+                    find_keycode_in_cut = find_right_cut.find(f'''{key_entry.get()}''')
+
+                    find_key_number = find_right_cut[find_key_word_in_cut + 3:find_keycode_in_cut]
+                    add_mf_reg = requests.get(bwd_url + f'''/cgi-bin/mifare_cgi?action=set&ScanKeysIndexes={find_key_number}''')
+                    if add_mf_reg.status_code == 200:
+                        i += 1
+                response_label = Label(frame_keys, text=f'''Мастер ключ Mifare добавлен в {i} панелей''')
+                response_label.grid(row=2, column=1, pady=5, padx=5)
+            except Exception:
+                mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
+
+        add_mf_reg_key_btn_to_all = Button(frame_keys, text='Добавить Mifare мастер ключ во все панели', cursor='hand2',
+                                    command=add_mf_regkey_to_all)
+        add_mf_reg_key_btn_to_all.grid(row=8, column=1, padx=5, pady=5)
+
+
+
         def delete_key():
             try:
-                mifare = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=delete&Key={key_entry.get()}''')
-                rfid = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=delete&Key={key_entry.get()}''')
+                mifare = requests.get(bwd_url+f'''/cgi-bin/mifare_cgi?action=delete&Key={key_entry.get()}''')
+                rfid = requests.get(bwd_url+f'''/cgi-bin/rfid_cgi?action=delete&Key={key_entry.get()}''')
                 if mifare.status_code or rfid.status_code == 200:
                     key_entry.delete(0, END)
                     response_label = Label(frame_keys, text='Ключ удален')
@@ -342,7 +429,7 @@ class BwdController(tk.Tk):
                 mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
 
         delete_key_button = Button(frame_keys, text='Удалить', cursor='hand2', command=delete_key)
-        delete_key_button.grid(row=5, column=1, padx=5,pady=5)
+        delete_key_button.grid(row=9, column=1, padx=5,pady=5)
 
         def delete_key_in_all_bwd():
             try:
@@ -359,14 +446,14 @@ class BwdController(tk.Tk):
                 mbox.showwarning('Ошибка', 'Проверьте выбран ли адрес и подключен ли VPN')
 
 
-        add_key_to_all_bwd_btn = Button(frame_keys, text='Удалить со всех панелей', cursor='hand2', command=delete_key_in_all_bwd)
-        add_key_to_all_bwd_btn.grid(row=6, column=1, pady=5,padx=5)
+        del_key_to_all_bwd_btn = Button(frame_keys, text='Удалить со всех панелей', cursor='hand2', command=delete_key_in_all_bwd)
+        del_key_to_all_bwd_btn.grid(row=10, column=1, pady=5,padx=5)
 
         def add_code_for_scan():
             try:
                 code_value = key_entry.get()
-                add_code_mf = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&ScanCode={code_value}&ScanCodeActive=on''')
-                add_code_rf = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=set&RegCode={code_value}&ScanCodeActive=on''')
+                add_code_mf = requests.get(bwd_url+f'''/cgi-bin/mifare_cgi?action=set&ScanCode={code_value}&ScanCodeActive=on''')
+                add_code_rf = requests.get(bwd_url+f'''/cgi-bin/rfid_cgi?action=set&RegCode={code_value}&ScanCodeActive=on''')
                 if add_code_mf.status_code or add_code_rf.status_code == 200:
                     response_label = Label(frame_keys, text='Код сканирования установлен')
                     response_label.grid(row=2, column=1, pady=5, padx=5)
@@ -381,7 +468,7 @@ class BwdController(tk.Tk):
 
         def disable_scan_code():
             try:
-                disable_code = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=set&ScanCodeActive=off''')
+                disable_code = requests.get(bwd_url+f'''/cgi-bin/mifare_cgi?action=set&ScanCodeActive=off''')
                 if disable_code.status_code == 200:
                     response_label = Label(frame_keys, text='Код сканирования отключен')
                     response_label.grid(row=2, column=1, pady=5, padx=5)
@@ -395,7 +482,7 @@ class BwdController(tk.Tk):
 
         def show_all_mifare_keys():
             try:
-                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=list''')
+                r = requests.get(bwd_url+f'''/cgi-bin/mifare_cgi?action=list''')
                 show_keys_window = Tk()
                 all_information = r.text
                 mf_tree_frame = ttk.Frame(show_keys_window)
@@ -441,7 +528,7 @@ class BwdController(tk.Tk):
 
         def show_all_rfid_keys():
             try:
-                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/rfid_cgi?action=list''')
+                r = requests.get(bwd_url+f'''/cgi-bin/rfid_cgi?action=list''')
                 show_rfid_window = Tk()
 
                 all_information = r.text
@@ -489,7 +576,7 @@ class BwdController(tk.Tk):
         show_all_rfid_keys_btn.grid(row=3, column=0, padx=5, pady=5)
 
         def export_mf():
-            url = f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=export'''
+            url = bwd_url+f'''/cgi-bin/mifare_cgi?action=export'''
             get = requests.get(url)
             get_content = get.text
 
@@ -540,7 +627,7 @@ class BwdController(tk.Tk):
 
         def import_mf():
             mf_file = fd.askopenfilename()
-            url = f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/mifare_cgi?action=import'''
+            url = bwd_url+f'''/cgi-bin/mifare_cgi?action=import'''
             post = requests.post(url, file=mf_file)
             if post.status_code == 200:
                 response_label = Label(frame_keys, text='Успешно')
@@ -561,7 +648,7 @@ class BwdController(tk.Tk):
         def edit_ticker():
             try:
                 r = requests.get(
-                    f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/display_cgi?action=set&TickerText={ticker_entry.get()}''')
+                    bwd_url+f'''/cgi-bin/display_cgi?action=set&TickerText={ticker_entry.get()}''')
                 if r.status_code == 200:
                     response_label = Label(frame_display, text='Бегущая строка изменена!')
                     response_label.grid(row=2, column=1, pady=5, padx=5)
@@ -577,7 +664,7 @@ class BwdController(tk.Tk):
 
         def enable_ticker():
             try:
-                r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/display_cgi?action=set&TickerEnable=on''')
+                r = requests.get(bwd_url+f'''/cgi-bin/display_cgi?action=set&TickerEnable=on''')
                 if r.status_code == 200:
                     response_label = Label(frame_display, text='Бегущая строка включена!')
                     response_label.grid(row=2, column=1, pady=5, padx=5)
@@ -597,7 +684,7 @@ class BwdController(tk.Tk):
         ping_entry.grid(row=1, column=2, padx=5, pady=5)
 
         def ping():
-            r = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/ping_cgi?action=start&host={ping_entry.get()}''')
+            r = requests.get(bwd_url+f'''/cgi-bin/ping_cgi?action=start&host={ping_entry.get()}''')
             if r.status_code == 200:
                 response = Label(frame_network, text=r.text)
                 response.grid(row=0, column=1, padx=5, pady=5)
@@ -611,24 +698,24 @@ class BwdController(tk.Tk):
         audio_param_label = Label(frame_video_audio,text='Параметры видео')
         audio_param_label.grid(row=0, column=0)
 
-        get_param_audio = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/videocoding_cgi?action=get''')
+        get_param_audio = requests.get(bwd_url+f'''/cgi-bin/videocoding_cgi?action=get''')
         get_param_audio_label = Label(frame_video_audio, text=get_param_audio.text)
         get_param_audio_label.grid(row=1, column=0)
 
 #SIP Frame
-        sip_reg_status = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/sip_cgi?action=regstatus''')
+        sip_reg_status = requests.get(bwd_url+f'''/cgi-bin/sip_cgi?action=regstatus''')
         sip_label = Label(frame_sip, text=sip_reg_status.text)
         sip_label.grid(row=15, column=0, pady=5, padx=5)
 
         def enable_account_sip1():
             if sip_reg_status.text[:13] == 'AccountEnable0':
-                enable = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/sip_cgi?action=set&AccountEnable1''')
+                enable = requests.get(bwd_url+f'''/cgi-bin/sip_cgi?action=set&AccountEnable1''')
                 if enable.status_code == 200:
                     mbox.showinfo('SIP1 Включен')
                 else:
                     mbox.showwarning('Ошибка','Ошибка включения SIP1')
             else:
-                disable = requests.get(f'''http://{self.login}:{self.password}@{self.ip}/cgi-bin/sip_cgi?action=set&AccountEnable0''')
+                disable = requests.get(bwd_url+f'''/cgi-bin/sip_cgi?action=set&AccountEnable0''')
                 if disable.status_code == 200:
                     mbox.showinfo('SIP1 Отключен')
                 else:
@@ -648,7 +735,7 @@ class BwdController(tk.Tk):
                 reg_serv_dhcp_value = 'on'
             else:
                 reg_serv_dhcp_value = 'off'
-            reg_serv = requests.get(f'''http://{self.login}:{self.password}@{self.ip}
+            reg_serv = requests.get(bwd_url+f'''
                 /cgi-bin/sip_cgi?action=set&AccountEnable1={enable_acc1_value}
                 &AccName1={acc_name1_entry.get()}&
                 AccNumber1={acc_number1_entry.get()}&
@@ -773,7 +860,7 @@ class BwdController(tk.Tk):
                 reg_serv2_dhcp_value = 'on'
             else:
                 reg_serv2_dhcp_value = 'off'
-            reg_serv = requests.get(f'''http://{self.login}:{self.password}@{self.ip}
+            reg_serv = requests.get(bwd_url+f'''
                 /cgi-bin/sip_cgi?action=set&AccountEnable1={enable_acc2_value}
                 &AccName1={acc_name2_entry.get()}&
                 AccNumber1={acc_number2_entry.get()}&
@@ -885,8 +972,39 @@ class BwdController(tk.Tk):
         enable_sip2_btn.grid(row=14, column=3, pady=5, padx=5)
 
 
-#/cgi-bin/sip_cgi?action=set&AccountEnable1={}&AccName1={}&AccNumber1={}&AccUser1={}&={}&AccPort1={}&ServerEnable1={}&RegServerDhcp1={}&RegServerUrl1={}&RegServerPort1={}&SipServerUrl1={}&SipServerPort1={}&SipServerPort1={}&ProxyServerUrl1={}&ProxyServerPort1={}
+# System conf
 
+
+        bwd_name = requests.get(bwd_url+f'''/cgi-bin/systeminfo_cgi?action=get''').text
+        bwd_name_label = Label(frame_sys, text='Серийный номер\n'+bwd_name)
+        bwd_name_label.grid(column=0, row=0, padx=5, pady=5)
+
+        def reset_conf():
+            result = askyesno('Предупрпеждение', 'Вы уверены что хотите сбросить настройки с сохранением сети и настроек квартиры?')
+            if result:
+                reset = requests.get(bwd_url + f'''/cgi-bin/factorydefault_cgi''')
+                if reset.status_code == 200:
+                    mbox.showinfo('Успешно', 'Вы успешно сбросили настройки')
+                else:
+                    mbox.showwarning('Ошибка', 'Ошибка сброса настроек')
+
+
+
+
+        reset_conf_btn = Button(frame_sys, text='Сброс настроек с сохранением сети и настроек квартиры', command=reset_conf)
+        reset_conf_btn.grid(column=1, row=0, padx=5, pady=5)
+
+        def hard_reset_conf():
+            result = askyesno('Предупрпеждение', 'Вы уверены что хотите сбросить все настройки?')
+            if result:
+                reset = requests.get(bwd_url + f'''/cgi-bin/hardfactorydefault_cgi''')
+                if reset.status_code == 200:
+                    mbox.showinfo('Успешно', 'Вы успешно сбросили все настройки')
+                else:
+                    mbox.showwarning('Ошибка', 'Ошибка сброса настроек')
+
+        hard_reset_btn = Button(frame_sys, text='Полный сброс настроек', command=hard_reset_conf)
+        hard_reset_btn.grid(column=1, row=1, padx=5, pady=5)
 
 
 
