@@ -41,6 +41,7 @@ try:
     create_address_list='''
     CREATE TABLE IF NOT EXISTS address_list(
     id INT AUTO_INCREMENT,
+    district TEXT NOT NUll,
     address TEXT NOT NULL,
     entrance INT, 
     ip TEXT NOT NULL,
@@ -75,7 +76,7 @@ finally:
     conn.close()
 
 
-def add_new_address(address,entrance, ip,login, password, owner, vpn):
+def add_new_address(district, address,entrance, ip,login, password, owner, vpn):
     try:
         conn = create_con_db(db_config["mysql"]["host"],
                              db_config["mysql"]["user"],
@@ -84,9 +85,9 @@ def add_new_address(address,entrance, ip,login, password, owner, vpn):
         cursor = conn.cursor()
         add_new_entry=f'''
         INSERT INTO 
-        address_list (address, entrance,ip,login, password, owner, vpn)
+        address_list (district, address, entrance,ip,login, password, owner, vpn)
          VALUES
-         ('{address}','{entrance}','{ip}','{login}','{password}','{owner}', '{vpn}');
+         ('{district}','{address}','{entrance}','{ip}','{login}','{password}','{owner}', '{vpn}');
          '''
         cursor.execute(add_new_entry)
         conn.commit()
@@ -171,7 +172,7 @@ def delete_select_vpn(id):
         cursor.close()
         conn.close()
 
-def edt_address(id,address,entrance,ip,login, password, owner, vpn):
+def edt_address(id, district,address,entrance,ip,login, password, owner, vpn):
     try:
         conn = create_con_db(db_config["mysql"]["host"],
                              db_config["mysql"]["user"],
@@ -179,7 +180,7 @@ def edt_address(id,address,entrance,ip,login, password, owner, vpn):
                              "1st_db")
         cursor = conn.cursor()
         edit = f'''
-        UPDATE address_list SET address = '{address}',entrance ='{entrance}', ip='{ip}',login='{login}', password='{password}', owner='{owner}', vpn='{vpn}'
+        UPDATE address_list SET district = '{district}', address = '{address}',entrance ='{entrance}', ip='{ip}',login='{login}', password='{password}', owner='{owner}', vpn='{vpn}'
         WHERE id='{id}'
         '''
         cursor.execute(edit)
@@ -356,6 +357,26 @@ def delete_company(company_name):
         conn.commit()
     except Error as error:
         print('Ошибка удаления организцаии', error)
+    finally:
+        cursor.close()
+        conn.close()
+
+def select_all_bwd_by_district(district, login, password):
+    try:
+        conn = create_con_db(db_config["mysql"]["host"],
+                             db_config["mysql"]["user"],
+                             db_config["mysql"]["pass"],
+                             "1st_db")
+        cursor = conn.cursor()
+        select = f'''
+                SELECT ip FROM 
+                address_list WHERE district='{district}' and login='{login}' and password = '{password}'
+                 '''
+        cursor.execute(select)
+        ip = cursor.fetchall()
+        return ip
+    except Error as error:
+        print('Ошибка выборки по району', error)
     finally:
         cursor.close()
         conn.close()

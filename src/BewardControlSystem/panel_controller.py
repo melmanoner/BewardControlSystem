@@ -7,13 +7,13 @@ from functions import disable_vpn
 import cv2
 from tkinter import messagebox as mbox
 from tkinter.messagebox import askyesno
-from mysql_connector import select_all_bwd_by_logpas
+from mysql_connector import select_all_bwd_by_logpas, selection_log_and_pass_by_name
 from tkinter import filedialog as fd
 import pandas as pd
 import csv
 
 class BwdController(tk.Tk):
-    def __init__(self, address,entrance, login, password, ip, company):
+    def __init__(self, district, address,entrance, login, password, ip, company):
         self.bwd_controller_window = tk.Tk.__init__(self)
         self.wm_geometry('1000x600')
         style = ThemedStyle(self)
@@ -59,9 +59,8 @@ class BwdController(tk.Tk):
         frame_sys.pack(expand=True, fill=BOTH)
         frame_display.pack(expand=True, fill=BOTH)
 
-
-        bwd_notebook.add(frame_intercom, text='Домофон')
         bwd_notebook.add(frame_keys, text='Ключи')
+        bwd_notebook.add(frame_intercom, text='Домофон')
         bwd_notebook.add(frame_display, text='Дисплей')
         bwd_notebook.add(frame_network, text='Сеть')
         bwd_notebook.add(frame_sip, text='SIP')

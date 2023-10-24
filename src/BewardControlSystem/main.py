@@ -92,11 +92,12 @@ class MainWindow(tk.Tk):
 
         tree = ttk.Treeview(tree_frame,
                             selectmode="extended",
-                            columns=('ID','address','entrance','ip','login','password','owner', 'vpn'),
+                            columns=('ID','district','address','entrance','ip','login','password','owner', 'vpn'),
                             height=10, show='headings')
 
 
         tree.column("ID", width=30 ,anchor=CENTER)
+        tree.column('district', width=200, anchor=CENTER)
         tree.column('address', width=250, anchor=CENTER)
         tree.column('entrance', width=250, anchor=CENTER)
         tree.column('ip', width=250, anchor=CENTER)
@@ -106,6 +107,7 @@ class MainWindow(tk.Tk):
         tree.column('vpn', width=0, stretch=NO)
 
         tree.heading("ID", text='ID')
+        tree.heading("district", text="Район")
         tree.heading("address", text="Адрес")
         tree.heading("entrance", text="Подъезд")
         tree.heading("ip", text='ip')
@@ -149,34 +151,38 @@ class MainWindow(tk.Tk):
         id_entry.grid_remove()
         entris.append(id_entry)
 
-
+        district_label = Label(data_frame, text="Район")
+        district_label.grid(row=0, column=0, padx=10, pady=10)
+        district_entry = Entry(data_frame)
+        district_entry.grid(row=0, column=1, padx=10, pady=10)
+        entris.append(district_entry)
 
         address_label = Label(data_frame, text="Адрес")
-        address_label.grid(row=0, column=0, padx=10, pady=10)
+        address_label.grid(row=0, column=2, padx=10, pady=10)
         address_entry = Entry(data_frame)
-        address_entry.grid(row=0, column=1, padx=10, pady=10)
+        address_entry.grid(row=0, column=3, padx=10, pady=10)
         entris.append(address_entry)
 
 
 
         entrance_label = Label(data_frame, text='Подъезд')
-        entrance_label.grid(row=0, column=2, padx=10, pady=10)
+        entrance_label.grid(row=0, column=4, padx=10, pady=10)
         entrance_entry = Entry(data_frame)
-        entrance_entry.grid(row=0, column=3, pady=10, padx=10)
+        entrance_entry.grid(row=0, column=5, pady=10, padx=10)
         entris.append(entrance_entry)
 
 
 
         ip_label = Label(data_frame, text="IP")
-        ip_label.grid(row=0, column=4, padx=10, pady=10)
+        ip_label.grid(row=0, column=6, padx=10, pady=10)
         ip_entry = Entry(data_frame)
-        ip_entry.grid(row=0, column=5, padx=10, pady=10)
+        ip_entry.grid(row=0, column=7, padx=10, pady=10)
         entris.append(ip_entry)
 
 
         self.vpn_variable = IntVar()
         vpn_checkbtn = Checkbutton(data_frame, text='VPN', variable=self.vpn_variable, onvalue=1, offvalue=0)
-        vpn_checkbtn.grid(row=0, column=6, padx=10, pady=10)
+        vpn_checkbtn.grid(row=0, column=8, padx=10, pady=10)
 
 
 
@@ -222,10 +228,10 @@ class MainWindow(tk.Tk):
         def open_bwd_controller():
             Vpn(ip_entry.get(), login_bwd_entry.get(), password_bwd_entry.get(), self.vpn_variable.get(),
                 get_vpn_by_company(owner_entry.get()))
-            BwdController(address_entry.get(), entrance_entry.get(), login_bwd_entry.get(),password_bwd_entry.get(),ip_entry.get(), owner_entry.get())
+            BwdController(district_entry.get(), address_entry.get(), entrance_entry.get(), login_bwd_entry.get(),password_bwd_entry.get(),ip_entry.get(), owner_entry.get())
 
         bwd_open_btn = Button(data_frame, bg='#FFFFF0', text='Открыть', relief='flat', cursor='hand2', command=open_bwd_controller)
-        bwd_open_btn.grid(row=0, column=7, padx=10, pady=10)
+        bwd_open_btn.grid(row=0, column=9, padx=10, pady=10)
 
 
 ########################################################################
@@ -235,7 +241,7 @@ class MainWindow(tk.Tk):
         button_frame.pack(fill=X, padx=20)
 
         def add_bwd():
-            add_new_address( address_entry.get(),entrance_entry.get(),ip_entry.get(),login_bwd_entry.get(),password_bwd_entry.get(), owner_entry.get(), self.vpn_variable.get())
+            add_new_address(district_entry.get(), address_entry.get(),entrance_entry.get(),ip_entry.get(),login_bwd_entry.get(),password_bwd_entry.get(), owner_entry.get(), self.vpn_variable.get())
             clear_entris()
             view_table()
         add_button = Button(button_frame, relief='flat', bg='#FFFFF0', text="Добавить",cursor = 'hand2', command=add_bwd)
@@ -243,7 +249,7 @@ class MainWindow(tk.Tk):
 
         # Edit button
         def edit_address():
-            edt_address(id_entry.get(), address_entry.get(),entrance_entry.get(),ip_entry.get(),login_bwd_entry.get(),password_bwd_entry.get(), owner_entry.get(), self.vpn_variable.get())
+            edt_address(id_entry.get(), district_entry.get(), address_entry.get(),entrance_entry.get(),ip_entry.get(),login_bwd_entry.get(),password_bwd_entry.get(), owner_entry.get(), self.vpn_variable.get())
             view_table()
 
 
