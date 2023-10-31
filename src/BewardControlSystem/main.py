@@ -3,7 +3,7 @@ import tkinter as tk
 from mysql_connector import add_new_address, get_vpn_from_address_list, \
     values_table,values_vpn_table, delete_select_address, delete_select_vpn,\
     edt_address, add_new_vpn, edit_vpn,select_vpn_name,selection_log_and_pass_by_name,\
-    remove_all_bwd,remove_all_vpn,values_company_table,add_company_to_listbox,delete_company,select_all_bwd_by_logpas, get_vpn_by_company
+    remove_all_bwd,remove_all_vpn,values_company_table,add_company_to_listbox,delete_company,select_all_bwd_by_logpas, get_vpn_by_company,select_all_bwd_by_district
 
 from tkinter import *
 from tkinter import ttk
@@ -18,6 +18,7 @@ import re
 from tkinter import filedialog as fd
 import pandas as pd
 from panel_controller import BwdController
+
 
 class MainWindow(tk.Tk):
     def __init__(self,*args, **kwargs):
@@ -61,8 +62,10 @@ class MainWindow(tk.Tk):
 
 
 
+
         notebook.add(bwd_frame, text='Бевард')
         notebook.add(vpn_frame, text='VPN')
+
 
 # Filter panel
         def filterTreeView(*args):
@@ -278,6 +281,7 @@ class MainWindow(tk.Tk):
             df_address_list = pd.read_excel(f'''{xlsx}''')
             base_list=[]
             id_xlsx = df_address_list['ID'].tolist()
+            district_xlsx = df_address_list['Район'].tolist()
             address_xlsx = df_address_list['Адрес'].tolist()
             entrance_xlsx = df_address_list['Подъезд'].tolist()
             ip_xlsx = df_address_list['ip'].tolist()
@@ -286,6 +290,7 @@ class MainWindow(tk.Tk):
             company_xlsx = df_address_list['Обслуживающая организация'].tolist()
             vpn_xlsx = df_address_list['VPN'].tolist()
             base_list.append(id_xlsx)
+            base_list.append(district_xlsx)
             base_list.append(address_xlsx)
             base_list.append(entrance_xlsx)
             base_list.append(ip_xlsx)
@@ -301,15 +306,16 @@ class MainWindow(tk.Tk):
                     break
                 for elem in base_list:
                     value_for_db.append(elem[x])
-                address_xlsx = value_for_db[1]
-                entrance_xlsx = value_for_db[2]
-                ip_xlsx = value_for_db[3]
-                login_xlsx = value_for_db[4]
-                password_xlsx = value_for_db[5]
-                company_xlsx = value_for_db[6]
-                vpn_xlsx = value_for_db[7]
+                district_xlsx = value_for_db[1]
+                address_xlsx = value_for_db[2]
+                entrance_xlsx = value_for_db[3]
+                ip_xlsx = value_for_db[4]
+                login_xlsx = value_for_db[5]
+                password_xlsx = value_for_db[6]
+                company_xlsx = value_for_db[7]
+                vpn_xlsx = value_for_db[8]
 
-                add_new_address(address_xlsx, entrance_xlsx, ip_xlsx, login_xlsx, password_xlsx, company_xlsx, vpn_xlsx)
+                add_new_address(district_xlsx, address_xlsx, entrance_xlsx, ip_xlsx, login_xlsx, password_xlsx, company_xlsx, vpn_xlsx)
 
             view_table()
 
@@ -524,12 +530,32 @@ class MainWindow(tk.Tk):
         tree_vpn.yview()
         tree_vpn.pack(side=TOP, fill=X)
 
+        # Control Frame
+        control_frame = LabelFrame(bwd_frame, text="Управление")
+        control_frame.pack(fill="x", padx=20)
 
+        key_label = Label(control_frame, text='Ключ')
+        key_label.grid(row=0, column=0, pady=10, padx=10)
+        key_entry = Entry(control_frame)
+        key_entry.grid(row=0, column=1, pady=10, padx=10)
 
-
-
-
-
+        def add_key_to_all_district():
+            try:
+                ip_list = select_all_bwd_by_district(district_entry.get(), login_bwd_entry.get(), password_bwd_entry.get())
+                i=0
+                for ip in ip_list:
+                    add_key_rfid = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip[0]}/cgi-bin/rfid_cgi?action=add&Key={key_entry.get()}''')
+                    add_key_mifare = requests.get(f'''http://{login_bwd_entry.get()}:{password_bwd_entry.get()}@{ip[0]}/cgi-bin/mifare_cgi?action=add&Key={key_entry.get()}''')
+                    if add_key_rfid.status_code or add_key_mifare.status_code == 200:
+                        i+=1
+                        print(i)
+                response_label = Label(control_frame, text=f'''Ключ добавлен в {i} панелей''')
+                response_label.grid(row=0, column=3, pady=10, padx=10)
+            except Exception:
+                mbox.showwarning('Ошибка')
+                print(Exception.args)
+        key_btn = Button(control_frame, text='Внести ключ по району', command=add_key_to_all_district)
+        key_btn.grid(row=0, column=2, pady=10, padx=10)
 
 class ChildAddCompany(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -577,6 +603,8 @@ class ChildAddCompany(tk.Tk):
 
         self.delete_btn = ttk.Button(self, text="Удалить", command=delete_select_company)
         self.delete_btn.grid(row=1, column=1, padx=6, pady=6)
+
+
 
 if __name__ == "__main__":
     #--------------------------------------------------------------------#
